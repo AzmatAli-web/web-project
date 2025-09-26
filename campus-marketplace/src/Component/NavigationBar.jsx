@@ -1,35 +1,33 @@
  
-
 import React from 'react';
 
-// Navbar for CampusMarketplace. Uses logo from assets.
+// Responsive Navbar that collapses into a hamburger menu on small screens.
 const NavigationBar = () => {
   return (
-    <header className="bg-white shadow-sm">
-      <nav className="container d-flex align-items-center justify-content-between py-3">
-        <div className="d-flex align-items-center">
-          <a className="navbar-brand d-flex align-items-center me-4" href="#">
-            <img src="/src/assets/images/picture3.png" alt="logo" width="36" height="36" className="me-2" />
-            <span className="fw-bold">CampusMarketplace</span>
+    <header className="shadow-sm" style={{ backgroundColor: '#b1b4b8e0' }}>
+      <nav className="navbar navbar-expand-lg">
+        <div className="container">
+          <a className="navbar-brand d-flex align-items-center" href="#">
+            <img src="/src/assets/images/picture3.png" alt="logo" width="40" height="40" style={{ borderRadius: '40%' }} className="me-2" />
+            <span className="fw-bold mb-0">CampusMarketplace</span>
           </a>
 
-          <ul className="nav d-none d-lg-flex">
-            <li className="nav-item"><a className="nav-link px-3" href="#books">Books</a></li>
-            <li className="nav-item"><a className="nav-link px-3" href="#gadgets">Gadgets</a></li>
-            <li className="nav-item"><a className="nav-link px-3" href="#stationery">Stationery</a></li>
-            <li className="nav-item"><a className="nav-link px-3" href="#accessories">Accessories</a></li>
-          </ul>
-        </div>
+          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span className="navbar-toggler-icon"></span>
+          </button>
 
-        <div className="d-flex align-items-center">
-          <form className="d-none d-md-flex align-items-center">
-            <input className="form-control form-control-sm me-2" type="search" placeholder="Search items, e.g. calculus" aria-label="Search" />
-            <button className="btn btn-outline-secondary btn-sm" type="submit">Search</button>
-          </form>
+          <div className="collapse navbar-collapse" id="mainNav">
+            <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
+              <li className="nav-item"><a className="nav-link" href="#">Home</a></li>
+              <li className="nav-item"><a className="nav-link" href="#categories">Categories</a></li>
+              <li className="nav-item"><a className="nav-link" href="#about">About</a></li>
+              <li className="nav-item"><a className="nav-link" href="#contact">Contact</a></li>
+            </ul>
 
-          <div className="ms-3 d-flex gap-2">
-            <button className="btn btn-outline-primary btn-sm">Login</button>
-            <button className="btn btn-primary btn-sm">Sell</button>
+            <div className="d-flex ms-lg-3">
+              <a href="#login" className="btn btn-link">Login</a>
+              <a href="#signup" className="btn btn-primary ms-2">Sign up</a>
+            </div>
           </div>
         </div>
       </nav>

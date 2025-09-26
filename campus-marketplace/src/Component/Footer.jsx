@@ -1,10 +1,10 @@
-import React from 'react';
+ 
 
 // Layout-only footer. Fill in links and content later.
 function Footer() {
   return (
-    <footer className="bg-dark text-white mt-5">
-      <div className="container py-4">
+    <footer className="bg-secondary text-white mt-5">
+      <div className="container-fluid py-4">
         <div className="row">
           <div className="col-12 col-md-4 mb-3 mb-md-0">
             <h6 className="fw-bold">CampusMarketplace</h6>

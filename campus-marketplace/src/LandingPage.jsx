@@ -7,7 +7,7 @@ import Footer from "./Component/Footer.jsx";
 
 function LandingPage() {
   return (
-    <div className="container-fluid">
+    <div className="container-fluid w-100 p-0" >
     <>
       <NavigationBar />
       <main>

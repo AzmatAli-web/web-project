@@ -1,5 +1,5 @@
 
-import React from 'react';
+ 
 import ProductCard from './ProductCard';
 
 const sampleProducts = [
@@ -11,16 +11,18 @@ const sampleProducts = [
 
 function LatestListings() {
   return (
-    <section className="container my-5">
+    <section className="container-fluid my-5">
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2 className="h5 mb-0">Latest Listings</h2>
+        <h2 className="h5 mb-0">Listed recently</h2>
         <a href="#" className="small">View all</a>
       </div>
 
       <div className="row g-3">
         {sampleProducts.map((p) => (
           <div className="col-6 col-md-3" key={p.id}>
-            <ProductCard image={p.image} title={p.title} price={p.price} />
+            <div className="rounded overflow-hidden">
+              <ProductCard image={p.image} title={p.title} price={p.price} />
+            </div>
           </div>
         ))}
       </div>
