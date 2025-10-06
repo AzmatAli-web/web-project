@@ -7,8 +7,8 @@ import Footer from "./Component/Footer.jsx";
 
 function LandingPage() {
   return (
-    <div className="container-fluid w-100 p-0" >
-    <>
+    <div className="container-fluid " style ={{minWidth:'800px'}}>
+    
       <NavigationBar />
       <main>
         <HeroSection />
@@ -17,7 +17,7 @@ function LandingPage() {
         <CallToAction />
       </main>
       <Footer />
-    </>
+    
   </div>);
 }
 

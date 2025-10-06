@@ -1,7 +1,7 @@
-function Home({ children, title }) {
+function AuthLayout({ children, title }) {
   return (
     <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light">
-      <div className="card shadow-lg w-100" style={{ maxWidth: '500px' }}>
+      <div className="card shadow-lg w-100" style={{ maxWidth: '300px' }}>
         <div className="card-body p-4 p-md-5">
           <div className="text-center mb-4">
             <img
