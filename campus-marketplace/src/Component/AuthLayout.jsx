@@ -1,4 +1,5 @@
-function AuthLayout({ children, title }) {
+function AuthLayout({ children, title }) 
+{
   return (
     <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light">
       <div className="card shadow-lg w-100" style={{ maxWidth: '300px' }}>

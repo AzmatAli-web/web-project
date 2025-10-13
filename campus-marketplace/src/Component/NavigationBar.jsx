@@ -19,11 +19,11 @@ const NavigationBar = () => {
           <button
             className="navbar-toggler"
             type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#mainNav"
-            aria-controls="mainNav"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
+            // data-bs-toggle="collapse"
+            // data-bs-target="#mainNav"
+            // aria-controls="mainNav"
+            // aria-expanded="false"
+            // aria-label="Toggle navigation"
           >
             <span className="navbar-toggler-icon"></span>
           </button>
@@ -43,8 +43,12 @@ const NavigationBar = () => {
               </li>
             </ul>
             <div className="d-flex ms-lg-3">
-              <Link to="/login" className="btn btn-primary g-4 text-decoration-none">Login</Link>
-              <Link to="/signup" className="btn btn-primary ms-2">Sign up</Link>
+              {/* Add Sell Button Here */}
+              <Link to="/sell" className="btn btn-success me-2">
+                ➕ Sell Item
+              </Link>
+              <Link to="/Login" className="btn btn-primary me-2 text-decoration-none">Login</Link>
+              <Link to="/signup" className="btn btn-primary">Sign up</Link>
             </div>
           </div>
         </div>

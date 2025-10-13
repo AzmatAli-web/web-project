@@ -15,7 +15,7 @@ function Footer() {
             <h6 className="fw-bold">Quick Links</h6>
             <ul className="list-unstyled small">
               <li><a href="#" className="text-white-50">Home</a></li>
-              <li><a href="#" className="text-white-50">Post an Item</a></li>
+              <li><a href="./Sell" className="text-white-50">Post an Item</a></li>
               <li><a href="#" className="text-white-50">Help</a></li>
             </ul>
           </div>
