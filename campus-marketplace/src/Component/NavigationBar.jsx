@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 
-const NavigationBar = () => {
+ 
+
+function NavigationBar () {
   return (
     <header className="shadow-sm" style={{ backgroundColor: '#b1b4b8e0' }}>
       <nav className="navbar navbar-expand-lg">
@@ -49,6 +51,7 @@ const NavigationBar = () => {
               </Link>
               <Link to="/Login" className="btn btn-primary me-2 text-decoration-none">Login</Link>
               <Link to="/signup" className="btn btn-primary">Sign up</Link>
+              <Link to="/Admin" className='btn ms-2 btn-danger'>Admin</Link>
             </div>
           </div>
         </div>
