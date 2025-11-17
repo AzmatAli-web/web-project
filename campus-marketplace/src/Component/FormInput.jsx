@@ -1,23 +1,40 @@
-import { useState } from 'react';
+import { useState, useEffect } from "react";
 
-function FormInput({ 
-  label, 
-  type = 'text', 
+function FormInput({
+  label,
+  type = "text",
   name,
-  value, 
-  onChange, 
-  error, 
+  value,
+  onChange,
   placeholder,
-  required = false 
+  required = false,
+  zodSchema,        // <-- Zod schema for this field
+  setError          // <-- function to update error in parent
 }) {
+  const [localError, setLocalError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const inputType = type === 'password' && showPassword ? 'text' : type;
+  const inputType = type === "password" && showPassword ? "text" : type;
+
+  // Validate on every value change
+  useEffect(() => {
+    if (!zodSchema) return;
+
+    try {
+      zodSchema.parse(value);
+      setLocalError("");
+      setError(name, "");   // clear error in parent
+    } catch (err) {
+      if (err.errors && err.errors.length > 0) {
+        setLocalError(err.errors[0].message);
+        setError(name, err.errors[0].message); // update parent error
+      }
+    }
+  }, [value, zodSchema, name, setError]);
 
   return (
     <div className="mb-3">
       <label className="form-label">
-        {label}
-        {required && <span className="text-danger">*</span>}
+        {label} {required && <span className="text-danger">*</span>}
       </label>
       <div className="input-group">
         <input
@@ -26,19 +43,19 @@ function FormInput({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className={`form-control ${error ? 'is-invalid' : ''}`}
+          className={`form-control ${localError ? "is-invalid" : ""}`}
         />
-        {type === 'password' && (
+        {type === "password" && (
           <button
             type="button"
             className="btn btn-outline-secondary"
             onClick={() => setShowPassword(!showPassword)}
           >
-            {showPassword ? 'Hide' : 'Show'}
+            {showPassword ? "Hide" : "Show"}
           </button>
         )}
       </div>
-      {error && <div className="invalid-feedback d-block">{error}</div>}
+      {localError && <div className="invalid-feedback d-block">{localError}</div>}
     </div>
   );
 }

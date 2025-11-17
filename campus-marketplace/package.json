@@ -3,17 +3,20 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "proxy":"http://localhost:5000/web-project",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
-  },
+  }, 
   "dependencies": {
+    "axios": "^1.13.2",
     "bootstrap": "^5.3.8",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-router-dom": "^7.9.3"
+    "react-router-dom": "^7.9.3",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",

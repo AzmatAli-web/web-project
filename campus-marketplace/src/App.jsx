@@ -44,16 +44,7 @@ function App() {
   ])
   return (
      <RouterProvider router={router}/>
-  //  <Router>
-  //     <Routes>
-  //       <Route path="/" element={<LandingPage />} />
-  //       <Route path="/Login" element={<Login />} />
-  //       <Route path="/signup" element={< Signup />} />
-  //       <Route path="/category/:categoryId" element={<CategoryPage />} />
-  //       <Route path="/product/:productId" element={<ProductDetail />} /> 
-  //       <Route path="/sell" element={<SellPage />} />
-  //     </Routes>
-  //   </Router>
+ 
   );
 }
 

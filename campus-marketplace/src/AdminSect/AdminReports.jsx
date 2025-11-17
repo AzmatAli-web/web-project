@@ -1,13 +1,37 @@
-import React from "react";
-// import './AdminDashboard.css'; // reuse same style if you have it
+import React, { useState, useEffect } from "react";
+import { z } from "zod";
+
+// Zod schema for ONE report
+const reportSchema = z.object({
+  id: z.number().int().positive(),
+  reporter: z.string(),
+  target: z.string(),
+  reason: z.string(),
+  status: z.enum(["Pending", "Resolved"]),
+});
+
+// Zod schema for array of reports
+const reportListSchema = z.array(reportSchema);
 
 function AdminReports() {
-  // Example sample data — later you’ll fetch from backend
-  const reports = [
-    { id: 1, reporter: "Ali", target: "Book Listing #23", reason: "Inappropriate content", status: "Pending" },
-    { id: 2, reporter: "Sara", target: "User JohnDoe", reason: "Spam messages", status: "Resolved" },
-    { id: 3, reporter: "Hamza", target: "Laptop Listing #45", reason: "Incorrect information", status: "Pending" },
-  ];
+  const [reports, setReports] = useState([]);
+
+  // Simulated backend fetch
+  useEffect(() => {
+    const fakeReports = [
+      { id: 1, reporter: "Ali", target: "Book Listing #23", reason: "Inappropriate content", status: "Pending" },
+      { id: 2, reporter: "Sara", target: "User JohnDoe", reason: "Spam messages", status: "Resolved" },
+      { id: 3, reporter: "Hamza", target: "Laptop Listing #45", reason: "Incorrect information", status: "Pending" },
+    ];
+
+    const result = reportListSchema.safeParse(fakeReports);
+
+    if (result.success) {
+      setReports(result.data);
+    } else {
+      console.error("Zod report validation error:", result.error);
+    }
+  }, []);
 
   return (
     <div className="container mt-4 styling">
@@ -50,10 +74,6 @@ function AdminReports() {
             ))}
           </tbody>
         </table>
-
-        <p className="text-center text-muted mt-3">
-          (This is a static preview. You’ll later connect it to backend data.)
-        </p>
       </div>
     </div>
   );

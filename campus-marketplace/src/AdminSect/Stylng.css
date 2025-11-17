@@ -25,9 +25,9 @@
   color: white;
 }
 
-.admin-table tr:nth-child(even) {
+/* .admin-table tr:nth-child(even) {
   background-color: #f9f9f9;
-}
+} */
 
 button {
   border: none;

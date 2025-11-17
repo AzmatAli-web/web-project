@@ -1,19 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Stylng.css';
 
 const ManageUsers = () => {
-  const [users, setUsers] = useState([
-    { id: 1, name: 'Ali Raza', email: 'ali@example.com', role: 'Buyer' },
-    { id: 2, name: 'Sara Khan', email: 'sara@example.com', role: 'Seller' },
-    { id: 3, name: 'Hamza Malik', email: 'hamza@example.com', role: 'Admin' },
-  ]);
+  const [users, setUsers] = useState([]);
+
+  // Fetch users from backend
+  useEffect(() => {
+    fetch("http://localhost:5000/users")
+      .then(res => res.json())
+      .then(data => setUsers(data))
+      .catch(err => console.error(err));
+  }, []);
 
   const handleDelete = (id) => {
-    setUsers(users.filter((u) => u.id !== id));
+    fetch(`http://localhost:5000/users/${id}`, {
+      method: "DELETE"
+    })
+      .then(res => res.json())
+      .then(() => {
+        setUsers(users.filter(u => u.id !== id));
+      });
   };
 
   const handleEdit = (id) => {
-    alert(`Edit feature for user #${id} coming soon `);
+    alert(`Edit feature for user #${id} coming soon`);
   };
 
   return (
@@ -22,11 +32,7 @@ const ManageUsers = () => {
       <table className="admin-table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Actions</th>
+            <th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -44,7 +50,7 @@ const ManageUsers = () => {
               </tr>
             ))
           ) : (
-            <tr><td colSpan="5">No users available</td></tr>
+            <tr><td colSpan="5">Loading...</td></tr>
           )}
         </tbody>
       </table>
