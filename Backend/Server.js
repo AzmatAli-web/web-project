@@ -1,28 +1,40 @@
-const express = require('express');
-const cors = require('cors');
-
-const authRoutes = require('./routes/authRoutes');
-const productRoutes = require('./routes/productRoutes');
-const userRoutes = require('./routes/userRoutes');
-
+// server.js
+const express = require("express");
+const cors = require("cors");
 const app = express();
 
-app.use(cors());
+// Middlewares
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type"]
+}));
 app.use(express.json());
 
-// attach routes
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/users', userRoutes);
-
-// health
-app.get('/', (req, res) => res.send('Backend demo running'));
-
-// error fallback
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ message: 'Server error' });
+// Security Headers
+app.use((req, res, next) => {
+  res.header("Content-Security-Policy", "default-src 'self'; connect-src 'self' http://localhost:* ws: wss:;");
+  next();
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+// Routes
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
+const productRoutes = require("./routes/productRoutes");
+const listingRoutes = require("./routes/listingRoutes");
+
+// Use Routes
+app.use("/auth", authRoutes);       // signup + login
+app.use("/users", userRoutes);      // manage users
+app.use("/products", productRoutes); // product management
+app.use("/listings", listingRoutes); // listing management
+
+// Root test route
+app.get("/", (req, res) => {
+  res.send("Backend is running...");
+});
+
+// Start Server
+app.listen(5000, () => {
+  console.log("Server running on port 5000");
+});

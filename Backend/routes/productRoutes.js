@@ -1,14 +1,20 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const prodCtrl = require('../controllers/productController');
+const productController = require("../controllers/productController");
 
-// public list/get
-router.get('/', prodCtrl.getProducts);
-router.get('/:id', prodCtrl.getProduct);
+// GET all products
+router.get("/", productController.getAllProducts);
 
-// protected-looking (no real auth) — for demo we accept requests
-router.post('/', prodCtrl.createProduct);
-router.put('/:id', prodCtrl.updateProduct);
-router.delete('/:id', prodCtrl.deleteProduct);
+// GET product by ID
+router.get("/:id", productController.getProductById);
+
+// POST create new product (with optional file upload)
+router.post("/", productController.createProduct);
+
+// PUT update product
+router.put("/:id", productController.updateProduct);
+
+// DELETE product
+router.delete("/:id", productController.deleteProduct);
 
 module.exports = router;

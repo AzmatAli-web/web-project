@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
+import * as authService from '../services/authService';
 import './Stylng.css';
 
 // Zod schema for a single listing
@@ -15,36 +16,65 @@ const listingsArraySchema = z.array(listingSchema);
 
 const ManageListings = () => {
   const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Simulated backend data
+  // Fetch listings from backend
   useEffect(() => {
-    const fakeListings = [
-      { id: 101, title: 'Used Laptop', seller: 'Sara Khan', status: 'Pending' },
-      { id: 102, title: 'iPhone 13', seller: 'Ali Raza', status: 'Approved' },
-      { id: 103, title: 'Bluetooth Speaker', seller: 'Hamza Malik', status: 'Pending' },
-    ];
-
-    // Validate using Zod
-    const result = listingsArraySchema.safeParse(fakeListings);
-
-    if (result.success) {
-      setListings(result.data);
-    } else {
-      console.error("Zod validation error:", result.error);
-    }
+    fetchListings();
   }, []);
 
-  const handleApprove = (id) => {
-    setListings(
-      listings.map((l) =>
-        l.id === id ? { ...l, status: 'Approved' } : l
-      )
-    );
+  const fetchListings = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await authService.getListings();
+      
+      // Validate using Zod
+      const result = listingsArraySchema.safeParse(data);
+
+      if (result.success) {
+        setListings(result.data);
+      } else {
+        console.error("Zod validation error:", result.error);
+        setError("Invalid data format from server");
+      }
+    } catch (err) {
+      console.error("Failed to fetch listings:", err);
+      setError(err.message || "Failed to fetch listings");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleRemove = (id) => {
-    setListings(listings.filter((l) => l.id !== id));
+  const handleApprove = async (id) => {
+    try {
+      await authService.approveListing(id);
+      setListings(
+        listings.map((l) =>
+          l.id === id ? { ...l, status: 'Approved' } : l
+        )
+      );
+    } catch (err) {
+      console.error("Failed to approve listing:", err);
+      alert(err.message || "Failed to approve listing");
+    }
   };
+
+  const handleRemove = async (id) => {
+    if (!window.confirm("Are you sure you want to remove this listing?")) return;
+    
+    try {
+      await authService.removeListing(id);
+      setListings(listings.filter((l) => l.id !== id));
+    } catch (err) {
+      console.error("Failed to remove listing:", err);
+      alert(err.message || "Failed to remove listing");
+    }
+  };
+
+  if (loading) return <div className="admin-page"><p>Loading listings...</p></div>;
+  if (error) return <div className="admin-page"><p style={{ color: 'red' }}>{error}</p></div>;
 
   return (
     <div className="admin-page">

@@ -25,7 +25,7 @@ const formSchema = z
     path: ["confirmPassword"]
   });
 
-function Signup() {
+function Signup({ onSubmit }) {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -67,37 +67,31 @@ function Signup() {
     setErrors({});
     setLoading(true);
 
-    try {
-      const res = await fetch("http://localhost:5000/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+    if (typeof onSubmit === "function") {
+      try {
+        // Delegate API call to parent/service
+        await onSubmit({
           fullName: formData.fullName,
           email: formData.email,
           studentId: formData.studentId,
           password: formData.password
-        })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.message);
-      } else {
-        alert("Account created successfully!");
-        setFormData({
-          fullName: "",
-          email: "",
-          studentId: "",
-          password: "",
-          confirmPassword: "",
-          agreeToTerms: false
         });
+      } catch (err) {
+        // Parent/service should handle errors; log here for debugging
+        // eslint-disable-next-line no-console
+        console.error("onSubmit error:", err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error(err);
-      alert("Something went wrong. Try again.");
-    } finally {
+    } else {
+      // No handler provided; keep component UI-only and log submitted data
+      // eslint-disable-next-line no-console
+      console.log("Signup submitted (no handler provided):", {
+        fullName: formData.fullName,
+        email: formData.email,
+        studentId: formData.studentId,
+        password: formData.password
+      });
       setLoading(false);
     }
   };

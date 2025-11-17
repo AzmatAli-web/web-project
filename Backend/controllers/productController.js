@@ -1,44 +1,104 @@
-const products = []; // in-memory products
-let productId = 1;
+// Mock database for products
+let products = [
+  { 
+    id: 1, 
+    title: 'Used Laptop', 
+    description: 'Dell laptop in good condition', 
+    price: 15000, 
+    category: 'Electronics', 
+    seller: 'Sara Khan',
+    image: '/uploads/laptop.jpg'
+  },
+  { 
+    id: 2, 
+    title: 'iPhone 13', 
+    description: 'iPhone 13 128GB', 
+    price: 60000, 
+    category: 'Electronics', 
+    seller: 'Ali Raza',
+    image: '/uploads/iphone.jpg'
+  },
+];
 
-exports.getProducts = (req, res) => {
-  res.json({ message: 'Products fetched successfully', products });
+let nextProductId = 3;
+
+/**
+ * GET all products
+ */
+exports.getAllProducts = (req, res) => {
+  res.json(products);
 };
 
+/**
+ * GET single product by ID
+ */
+exports.getProductById = (req, res) => {
+  const product = products.find(p => p.id === parseInt(req.params.id));
+  if (!product) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+  res.json(product);
+};
+
+/**
+ * CREATE new product (with optional image upload)
+ */
 exports.createProduct = (req, res) => {
-  const { title, description, price, stock } = req.body;
-  if (!title || price == null) return res.status(400).json({ message: 'title and price required' });
+  const { title, description, price, category } = req.body;
 
-  const p = { id: productId++, title, description: description || '', price: Number(price), stock: stock ? Number(stock) : 0 };
-  products.push(p);
-  res.status(201).json({ message: 'Product created successfully', product: p });
+  if (!title || !price) {
+    return res.status(400).json({ message: "Title and price are required" });
+  }
+
+  const newProduct = {
+    id: nextProductId++,
+    title,
+    description: description || '',
+    price: parseFloat(price),
+    category: category || 'Other',
+    seller: 'Current User', // Replace with authenticated user
+    image: req.file ? `/uploads/${req.file.filename}` : '/uploads/default.jpg',
+  };
+
+  products.push(newProduct);
+
+  // Return success message with minimal detail
+  res.status(201).json({ 
+    message: "Image received! Product created successfully.", 
+    productId: newProduct.id 
+  });
 };
 
-exports.getProduct = (req, res) => {
-  const p = products.find(x => x.id === Number(req.params.id));
-  if (!p) return res.status(404).json({ message: 'Product not found' });
-  res.json({ message: 'Product fetched', product: p });
-};
-
+/**
+ * UPDATE product
+ */
 exports.updateProduct = (req, res) => {
-  const p = products.find(x => x.id === Number(req.params.id));
-  if (!p) return res.status(404).json({ message: 'Product not found' });
+  const id = parseInt(req.params.id);
+  const product = products.find(p => p.id === id);
 
-  const { title, description, price, stock } = req.body;
-  if (title !== undefined) p.title = title;
-  if (description !== undefined) p.description = description;
-  if (price !== undefined) p.price = Number(price);
-  if (stock !== undefined) p.stock = Number(stock);
+  if (!product) {
+    return res.status(404).json({ message: "Product not found" });
+  }
 
-  res.json({ message: 'Product updated successfully', product: p });
+  if (req.body.title) product.title = req.body.title;
+  if (req.body.description) product.description = req.body.description;
+  if (req.body.price) product.price = req.body.price;
+  if (req.body.category) product.category = req.body.category;
+
+  res.json({ message: "Product updated", product });
 };
 
+/**
+ * DELETE product
+ */
 exports.deleteProduct = (req, res) => {
-  const idx = products.findIndex(x => x.id === Number(req.params.id));
-  if (idx === -1) return res.status(404).json({ message: 'Product not found' });
-  products.splice(idx, 1);
-  res.json({ message: 'Product deleted successfully' });
-};
+  const id = parseInt(req.params.id);
+  const index = products.findIndex(p => p.id === id);
 
-// export internal products for tests if needed
-exports._internal = { products };
+  if (index === -1) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+
+  products.splice(index, 1);
+  res.json({ message: "Product deleted" });
+};

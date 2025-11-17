@@ -1,30 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import './Stylng.css';
+import React, { useState, useEffect } from "react";
+import "./Stylng.css";
 
-const ManageUsers = () => {
+const ManageUsers = ({ onFetch, onDelete }) => {
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Fetch users from backend
+  const fetchUsers = async () => {
+    setLoading(true);
+    setError(null);
+    if (typeof onFetch === "function") {
+      try {
+        const res = await onFetch();
+        // Expect `onFetch` to return an array of users
+        setUsers(res || []);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to fetch users");
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // No fetch handler provided — remain UI-only
+      // eslint-disable-next-line no-console
+      console.log("ManageUsers: no onFetch handler provided");
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetch("http://localhost:5000/users")
-      .then(res => res.json())
-      .then(data => setUsers(data))
-      .catch(err => console.error(err));
+    fetchUsers();
   }, []);
 
-  const handleDelete = (id) => {
-    fetch(`http://localhost:5000/users/${id}`, {
-      method: "DELETE"
-    })
-      .then(res => res.json())
-      .then(() => {
-        setUsers(users.filter(u => u.id !== id));
-      });
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    if (typeof onDelete === "function") {
+      try {
+        await onDelete(id);
+        setUsers((prev) => prev.filter((u) => u.id !== id));
+      } catch (err) {
+        console.error(err);
+        alert("Failed to delete user");
+      }
+    } else {
+      // No delete handler provided — perform local removal only
+      setUsers((prev) => prev.filter((u) => u.id !== id));
+    }
   };
 
   const handleEdit = (id) => {
     alert(`Edit feature for user #${id} coming soon`);
   };
+
+  if (loading) return <p>Loading users...</p>;
+  if (error) return <p>{error}</p>;
 
   return (
     <div className="admin-page">
@@ -50,7 +80,7 @@ const ManageUsers = () => {
               </tr>
             ))
           ) : (
-            <tr><td colSpan="5">Loading...</td></tr>
+            <tr><td colSpan="5">No users found.</td></tr>
           )}
         </tbody>
       </table>

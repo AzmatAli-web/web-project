@@ -1,31 +1,35 @@
-const authCtrl = require('./authController');
-// use same in-memory users
-const users = authCtrl._internal.users;
+// controllers/userController.js
+let users = [
+  { id: 1, name: "Azmat Ali", email: "azmat@example.com", role: "admin" },
+  { id: 2, name: "Fatima Noor", email: "fatima@example.com", role: "user" },
+  { id: 3, name: "Bilal Ahmed", email: "bilal@example.com", role: "user" },
+];
 
-exports.listUsers = (req, res) => {
-  // do not send passwords
-  const safe = users.map(u => ({ id: u.id, name: u.name, email: u.email }));
-  res.json({ message: 'Users fetched successfully', users: safe });
+exports.getUsers = (req, res) => {
+  res.json(users);
 };
 
-exports.getUser = (req, res) => {
-  const u = users.find(x => x.id === Number(req.params.id));
-  if (!u) return res.status(404).json({ message: 'User not found' });
-  res.json({ message: 'User fetched', user: { id: u.id, name: u.name, email: u.email } });
-};
-
-exports.updateUser = (req, res) => {
-  const u = users.find(x => x.id === Number(req.params.id));
-  if (!u) return res.status(404).json({ message: 'User not found' });
-  const { name, email } = req.body;
-  if (name !== undefined) u.name = name;
-  if (email !== undefined) u.email = email;
-  res.json({ message: 'User updated successfully', user: { id: u.id, name: u.name, email: u.email } });
+exports.getUserById = (req, res) => {
+  const user = users.find(u => u.id === parseInt(req.params.id));
+  if (!user) return res.status(404).json({ message: "User not found" });
+  res.json(user);
 };
 
 exports.deleteUser = (req, res) => {
-  const idx = users.findIndex(x => x.id === Number(req.params.id));
-  if (idx === -1) return res.status(404).json({ message: 'User not found' });
-  users.splice(idx, 1);
-  res.json({ message: 'User deleted successfully' });
+  const id = parseInt(req.params.id);
+  const index = users.findIndex(u => u.id === id);
+  if (index === -1) return res.status(404).json({ message: "User not found" });
+
+  users.splice(index, 1);
+  res.json({ message: "User deleted successfully" });
+};
+
+exports.updateUser = (req, res) => {
+  const id = parseInt(req.params.id);
+  const index = users.findIndex(u => u.id === id);
+  if (index === -1) return res.status(404).json({ message: "User not found" });
+
+  const { name, email, role } = req.body;
+  users[index] = { ...users[index], name, email, role };
+  res.json({ message: "User updated successfully", user: users[index] });
 };

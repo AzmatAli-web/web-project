@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 // ZOD SCHEMA
@@ -8,31 +7,26 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-function Login() {
+function Login({ onSubmit }) {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
   const [errors, setErrors] = useState({});
-  const navigate = useNavigate();
 
   // Handle input
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
-  // Submit handler
-  const handleSubmit = async (e) => {
+  // Submit handler (UI-only). Calls `onSubmit` prop if provided.
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     // Zod validation
@@ -40,35 +34,31 @@ function Login() {
 
     if (!validation.success) {
       const formErrors = {};
-      validation.error.errors.forEach((err) => {
-        formErrors[err.path[0]] = err.message;
-      });
+      if (validation.error && validation.error.errors) {
+        validation.error.errors.forEach((err) => {
+          formErrors[err.path[0]] = err.message;
+        });
+      }
       setErrors(formErrors);
       return;
     }
 
-    // Backend login request
-    try {
-      const response = await fetch("http://localhost:5000/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+    setErrors({});
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.message);
-        return;
+    // Delegate actual API call to parent/service via prop
+    if (typeof onSubmit === "function") {
+      try {
+        onSubmit(formData);
+      } catch (err) {
+        // Keep component UI-only; log errors from external handler
+        // Parent/service should handle errors and navigation
+        // eslint-disable-next-line no-console
+        console.error("onSubmit handler error:", err);
       }
-
-      alert("Login successful!");
-      navigate("/");
-    } catch (error) {
-      alert("Server error. Make sure backend is running!");
-      console.error(error);
+    } else {
+      // No API handler provided; just log the data
+      // eslint-disable-next-line no-console
+      console.log("Login submitted (no handler provided):", formData);
     }
   };
 
