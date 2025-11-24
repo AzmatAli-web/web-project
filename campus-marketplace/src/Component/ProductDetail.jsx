@@ -1,5 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import AddToCartButton from '../Component/Cart/AddToCartButton'; // ✅ ADD THIS IMPORT
 
 function ProductDetail() {
   const { productId } = useParams();
@@ -7,18 +8,19 @@ function ProductDetail() {
 
   // Extended product data with Pakistani details
   const allProducts = [
+    // ... your existing products array (keep all your products as they are)
     // ========== BOOKS CATEGORY ==========
     {
       id: 1,
       name: "Used Calculus Book",
       price: 500,
       category: "books",
-      image: "/src/assets/images2/books.jpeg",
+      image: "/images/books.jpeg", // ✅ CHANGED: Use public folder path
       description: "This calculus textbook is in excellent condition with minimal highlighting. Perfect for first-year engineering students at NUST or FAST University. Covers all essential topics including derivatives, integrals, and multivariable calculus.",
       condition: "Good",
       seller: "Azmat Ali",
       contact: "0300-1234567",
-      location: "abbotabad,  Mirpur",
+      location: "abbotabad, Mirpur",
       postedDate: "2024-01-15",
       specifications: {
         "Author": "James Stewart",
@@ -34,7 +36,7 @@ function ProductDetail() {
       name: "Software Engineering",
       price: 600,
       category: "books",
-      image: "/src/assets/images2/software.jpeg",
+      image: "/images2/software.jpeg",
       description: "Comprehensive software engineering textbook used in CS programs at LUMS and UET. Covers SDLC, Agile methodologies, and software design patterns. Includes solved examples and practice problems.",
       condition: "Like New",
       seller: "Ahmad Raza",
@@ -55,7 +57,7 @@ function ProductDetail() {
       name: "DSA in Python Textbook",
       price: 400,
       category: "books",
-      image: "/src/assets/images2/dsainpython.jpg",
+      image: "/images2/dsainpython.jpg",
       description: "Perfect book for computer science students learning Data Structures and Algorithms in Python. Includes coding examples and interview preparation questions. Used by students at COMSATS and FAST.",
       condition: "Very Good",
       seller: "Fatima Noor",
@@ -76,7 +78,7 @@ function ProductDetail() {
       name: "DSA in Java Textbook",
       price: 350,
       category: "books",
-      image: "/src/assets/images2/dsainjava.jpg",
+      image: "/images2/dsainjava.jpg",
       description: "Complete guide to Data Structures and Algorithms in Java. Essential for software engineering students at PUCIT and UET. Includes practical implementations and coding exercises.",
       condition: "Good",
       seller: "Bilal Ahmed",
@@ -97,7 +99,7 @@ function ProductDetail() {
       name: "Calculus Textbook",
       price: 4500,
       category: "books",
-      image: "/src/assets/images2/calc.jpg",
+      image: "/images2/calc.jpg",
       description: "Brand new calculus textbook for beginners. Perfect for pre-engineering students or first semester mathematics. Includes solved examples and practice problems with step-by-step solutions.",
       condition: "New",
       seller: "Sara Khan",
@@ -118,7 +120,7 @@ function ProductDetail() {
       name: "Software Handwritten Notes",
       price: 350,
       category: "books",
-      image: "/src/assets/images2/handwritten.jpg",
+      image: "/images2/handwritten.jpg",
       description: "Complete handwritten notes for Software Engineering course. Compiled by a NUST graduate with excellent grades. Includes diagrams, flowcharts, and important concepts highlighted.",
       condition: "Good",
       seller: "Usman Sheikh",
@@ -140,7 +142,7 @@ function ProductDetail() {
       name: "Second-hand Dell Laptop",
       price: 30000,
       category: "gadgets",
-      image: "/src/assets/images2/dell.jpg",
+      image: "/images2/dell.jpg",
       description: "Dell Inspiron laptop in perfect working condition. Ideal for programming, assignments, and online classes. Battery life 4-5 hours. Comes with original charger and carrying bag.",
       condition: "Good",
       seller: "Ali Hassan",
@@ -162,7 +164,7 @@ function ProductDetail() {
       name: "Scientific Calculator",
       price: 1500,
       category: "gadgets",
-      image: "/src/assets/images2/calc2.jpg",
+      image: "/images2/calc2.jpg",
       description: "Casio scientific calculator perfect for engineering students. Supports complex calculations, trigonometry, and statistical functions. Like new condition with original packaging.",
       condition: "Like New",
       seller: "Zainab Malik",
@@ -182,7 +184,7 @@ function ProductDetail() {
       name: "Graphing Calculator",
       price: 1500,
       category: "gadgets",
-      image: "/src/assets/images2/cal1.jpg",
+      image: "/images2/cal1.jpg",
       description: "Advanced graphing calculator for engineering and mathematics students. Can plot graphs, solve equations, and perform complex calculations. Essential for exams and assignments.",
       condition: "Very Good",
       seller: "Omar Farooq",
@@ -202,7 +204,7 @@ function ProductDetail() {
       name: "HP Laptop",
       price: 80000,
       category: "gadgets",
-      image: "/src/assets/images2/hplap.jpg",
+      image: "/images2/hplap.jpg",
       description: "HP Pavilion laptop in excellent condition. Perfect for computer science students for coding, video editing, and gaming. High performance with dedicated graphics card.",
       condition: "Very Good",
       seller: "Hamza Iqbal",
@@ -224,7 +226,7 @@ function ProductDetail() {
       name: "Huawei Laptop",
       price: 100000,
       category: "gadgets",
-      image: "/src/assets/images2/huawei.jpg",
+      image: "/images2/huawei.jpg",
       description: "Huawei MateBook in pristine condition. Lightweight and powerful, perfect for students who need portability. Excellent battery life and stunning display.",
       condition: "Like New",
       seller: "Ayesha Rahman",
@@ -248,7 +250,7 @@ function ProductDetail() {
       name: "Geometry Complete Set Box",
       price: 180,
       category: "stationery",
-      image: "/src/assets/images2/statcompbox.jpg",
+      image: "/images2/statcompbox.jpg",
       description: "Complete geometry set including compass, divider, ruler, protractor, and pencils. Perfect for engineering and architecture students. Durable plastic case.",
       condition: "New",
       seller: "Rashid Mahmood",
@@ -267,7 +269,7 @@ function ProductDetail() {
       name: "Notebook Set",
       price: 200,
       category: "stationery",
-      image: "/src/assets/images2/stat1.jpg",
+      image: "/images2/stat1.jpg",
       description: "Set of 5 high-quality notebooks for different subjects. Each notebook has 120 pages with premium paper quality. Perfect for university students.",
       condition: "New",
       seller: "Saima Akhtar",
@@ -286,7 +288,7 @@ function ProductDetail() {
       name: "Pen Collection",
       price: 150,
       category: "stationery",
-      image: "/src/assets/images2/stat2.jpg",
+      image: "/images2/stat2.jpg",
       description: "Collection of 10 high-quality pens for smooth writing. Includes different colors and tip sizes. Perfect for note-taking and assignments.",
       condition: "New",
       seller: "Nasir Ahmed",
@@ -307,7 +309,7 @@ function ProductDetail() {
       name: "File Folder",
       price: 150,
       category: "accessories",
-      image: "/src/assets/images2/filefolder.jpg",
+      image: "/images2/filefolder.jpg",
       description: "Sturdy file folder for organizing documents, assignments, and certificates. Multiple compartments for different subjects. Durable material.",
       condition: "New",
       seller: "Kashif Mehmood",
@@ -326,7 +328,7 @@ function ProductDetail() {
       name: "Book Cover",
       price: 80,
       category: "accessories",
-      image: "/src/assets/images2/bookcvr1.jpg",
+      image: "/images2/bookcvr1.jpg",
       description: "Protective plastic covers for textbooks. Keep your books safe from damage and spills. Transparent design shows book title.",
       condition: "New",
       seller: "Tahir Mahmood",
@@ -345,7 +347,7 @@ function ProductDetail() {
       name: "Lunch Box",
       price: 1200,
       category: "accessories",
-      image: "/src/assets/images2/lunchbox.jpg",
+      image: "/images2/lunchbox.jpg",
       description: "High-quality insulated lunch box for students. Keeps food warm for hours. Multiple compartments for different food items. Leak-proof design.",
       condition: "Like New",
       seller: "Nadia Shah",
@@ -364,7 +366,7 @@ function ProductDetail() {
       name: "Water Bottle",
       price: 1200,
       category: "accessories",
-      image: "/src/assets/images2/watterbottle.jpg",
+      image: "/images2/watterbottle.jpg",
       description: "Stainless steel water bottle with thermal insulation. Keeps water cold for 24 hours or hot for 12 hours. Perfect for long university days.",
       condition: "New",
       seller: "Faisal Nadeem",
@@ -383,7 +385,7 @@ function ProductDetail() {
       name: "Umbrella",
       price: 1200,
       category: "accessories",
-      image: "/src/assets/images2/umbrella.jpg",
+      image: "/images2/umbrella.jpg",
       description: "Large automatic umbrella with windproof design. Perfect for rainy season in Pakistan. Compact and easy to carry in backpack.",
       condition: "New",
       seller: "Maria Saeed",
@@ -399,6 +401,7 @@ function ProductDetail() {
     }
   ];
 
+  
   // Find the specific product by ID
   const product = allProducts.find(p => p.id === parseInt(productId));
 
@@ -425,6 +428,15 @@ function ProductDetail() {
 
   const handleGoBack = () => {
     navigate(-1);
+  };
+
+  // ✅ CREATE PRODUCT OBJECT FOR AddToCartButton
+  const productForCart = {
+    _id: product.id.toString(), // Convert to string for MongoDB-like ID
+    name: product.name,
+    price: product.price,
+    image: product.image,
+    status: 'available' // All products are available
   };
 
   return (
@@ -457,6 +469,15 @@ function ProductDetail() {
                 <h1 className="h2 fw-bold text-dark mb-3">{product.name}</h1>
                 <p className="h3 text-primary mb-4">Rs. {product.price}</p>
                 
+                {/* ✅ ADDED: Add to Cart Button */}
+                <div className="mb-4">
+                  <AddToCartButton 
+                    product={productForCart}
+                    size="lg"
+                    showQuantity={true}
+                  />
+                </div>
+
                 {/* Product Details */}
                 <div className="mb-4">
                   <h5 className="fw-bold mb-3">Product Details</h5>

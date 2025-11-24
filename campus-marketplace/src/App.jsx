@@ -1,55 +1,60 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import {createBrowserRouter,RouterProvider} from 'react-router-dom';
-
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { CartProvider } from './context/CartContext'; // ✅ ADD THIS
 import LandingPage from "./LandingPage";
 import Login from "./Pages/Login";
 import Signup from "./Pages/Signup";
 import CategoryPage from "./Component/CategoryPage";
-import ProductDetail from "./Component/ProductDetail"; // Add this import
+import ProductDetail from "./Component/ProductDetail";
 import SellPage from './Component/SellPage';
 import Admin from './Admin';
-import Profile from './Pages/Profile'; // ✅ ADD THIS IMPORT
+import Profile from './Pages/Profile';
+import Cart from './Pages/Cart';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
-
-  const router=createBrowserRouter([
+  const router = createBrowserRouter([
     {
-      path:"/",
-      element:<LandingPage/>
-     },
-     {
-      path:"Login",
-      element:<Login/>
-     },
-     {
-      path:"/signup",
-      element:<Signup/>
-     },
-     {
-      path:"/sell",
-      element:<SellPage/>
-     },
-     {
-      path:"category/:categoryId",
-      element:<CategoryPage/>
-     },
-     {
+      path: "/",
+      element: <LandingPage/>
+    },
+    {
+      path: "Login",
+      element: <Login/>
+    },
+    {
+      path: "/signup",
+      element: <Signup/>
+    },
+    {
+      path: "/sell",
+      element: <SellPage/>
+    },
+    {
+      path: "category/:categoryId",
+      element: <CategoryPage/>
+    },
+    {
       path: "/product/:productId",
       element: <ProductDetail />
     },
     {
-      path:"/Admin",
-      element:<Admin/>
+      path: "/Admin",
+      element: <Admin/>
     },
-    { // ✅ ADD THIS NEW ROUTE ONLY
-      path:"/profile",
-      element:<Profile/>
+    {
+  path: "/cart",
+  element: <Cart/>
+    },
+    {
+      path: "/profile",
+      element: <Profile/>
     }
-  ])
+  ]);
+
   return (
-     <RouterProvider router={router}/>
- 
+    <CartProvider> {/* ✅ WRAP WITH CARTPROVIDER */}
+      <RouterProvider router={router}/>
+    </CartProvider>
   );
 }
 

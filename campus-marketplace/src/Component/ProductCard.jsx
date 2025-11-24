@@ -1,19 +1,61 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import AddToCartButton from './Cart/AddToCartButton';
 
-// ProductCard displays an item image and basic meta. Props: image, title, price
-function ProductCard({ image, title, price }) {
+// Updated to accept full product object
+function ProductCard({ product }) {
+  const navigate = useNavigate();
+
+  // Handle view details
+  const handleViewDetails = () => {
+    if (product && product.id) {
+      navigate(`/product/${product.id}`);
+    }
+  };
+
+  // Create product object for AddToCartButton
+  const productForCart = {
+    _id: product.id.toString(),
+    name: product.name,
+    price: product.price,
+    image: product.image,
+    status: 'available'
+  };
+
   return (
-    <article className="card">
-      <img src={image} alt={title} className="card-img-top" style={{ height: '180px', objectFit: 'cover' }} />
-      <div className="card-body">
-        <h5 className="card-title">{title}</h5>
-        <p className="card-text  mb-3">Rs. {price}</p>
-        <div className="mt-auto d-flex justify-content-between align-items-center">
-          <div className="btn-group">
-            <button className="btn btn-sm btn-outline-primary">View</button>
-            <button className="btn btn-sm btn-primary">Contact</button>
+    <article className="card h-100 shadow-sm">
+      <img 
+        src={product.image} 
+        alt={product.name} 
+        className="card-img-top" 
+        style={{ height: '180px', objectFit: 'cover' }} 
+      />
+      <div className="card-body d-flex flex-column">
+        <h5 className="card-title" style={{ minHeight: '48px' }}>{product.name}</h5>
+        <p className="card-text text-primary fw-bold mb-3">Rs. {product.price}</p>
+        
+        <div className="mt-auto">
+          {/* ✅ ADDED: Add to Cart Button */}
+          <div className="mb-3">
+            <AddToCartButton 
+              product={productForCart}
+              size="sm"
+              showQuantity={false}
+            />
           </div>
-          <div className="text-muted">Just now</div>
+          
+          <div className="d-flex justify-content-between align-items-center">
+            <div className="btn-group">
+              <button 
+                className="btn btn-sm btn-outline-primary"
+                onClick={handleViewDetails}
+              >
+                View Details
+              </button>
+              <button className="btn btn-sm btn-primary">Contact</button>
+            </div>
+            <small className="text-muted">Just now</small>
+          </div>
         </div>
       </div>
     </article>

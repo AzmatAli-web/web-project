@@ -1,12 +1,39 @@
-
- 
 import ProductCard from './ProductCard';
 
+// ✅ UPDATED: Include full product data for AddToCart
 const sampleProducts = [
-  { id: 1, image: '/images/books2.jpeg', title: 'Used Calculus Book', price: 500 },
-  { id: 4, image: '/images/books.jpeg', title: 'Lecture Notes Bundle', price: 500 },
-  { id: 3, image: '/images/calculater.jpeg', title: 'Graphing Calculator', price: 1500 },
-  { id: 2, image: '/images/laptop.jpeg', title: 'Second-hand Laptop', price: 30000 },
+  { 
+    id: 1, 
+    image: '/images/books2.jpeg', 
+    title: 'Used Calculus Book', 
+    price: 500,
+    name: 'Used Calculus Book', // ✅ ADD name for AddToCart
+    status: 'available'
+  },
+  { 
+    id: 4, 
+    image: '/images/books.jpeg', 
+    title: 'Lecture Notes Bundle', 
+    price: 500,
+    name: 'Lecture Notes Bundle', // ✅ ADD name for AddToCart
+    status: 'available'
+  },
+  { 
+    id: 3, 
+    image: '/images/calculater.jpeg', 
+    title: 'Graphing Calculator', 
+    price: 1500,
+    name: 'Graphing Calculator', // ✅ ADD name for AddToCart
+    status: 'available'
+  },
+  { 
+    id: 2, 
+    image: '/images/laptop.jpeg', 
+    title: 'Second-hand Laptop', 
+    price: 30000,
+    name: 'Second-hand Laptop', // ✅ ADD name for AddToCart
+    status: 'available'
+  },
 ];
 
 function LatestListings() {
@@ -18,10 +45,11 @@ function LatestListings() {
       </div>
 
       <div className="row g-3">
-        {sampleProducts.map((p) => (
-          <div className="col-6 col-md-3" key={p.id}>
+        {sampleProducts.map((product) => ( // ✅ CHANGED: p → product
+          <div className="col-6 col-md-3" key={product.id}>
             <div className="rounded">
-              <ProductCard image={p.image} title={p.title} price={p.price} />
+              {/* ✅ UPDATED: Pass full product object instead of separate props */}
+              <ProductCard product={product} />
             </div>
           </div>
         ))}

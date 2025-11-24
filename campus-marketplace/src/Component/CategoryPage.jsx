@@ -1,5 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import AddToCartButton from './Cart/AddToCartButton'; // ✅ ADD THIS IMPORT
 
 function CategoryPage() {
   const { categoryId } = useParams();
@@ -7,6 +8,7 @@ function CategoryPage() {
 
   // Sample product data with MULTIPLE ITEMS for each category
   const allProducts = [
+    // ... your existing products array (keep all products as they are)
     // ========== BOOKS CATEGORY - Multiple Books ==========
     {
       id: 1,
@@ -14,7 +16,8 @@ function CategoryPage() {
       price: 500,
       category: "books",
       image: "/images2/books.jpeg",
-      description: "Great condition calculus book for engineering students"
+      description: "Great condition calculus book for engineering students",
+      status: 'available' // ✅ ADD status field
     },
     {
       id: 2,
@@ -22,150 +25,10 @@ function CategoryPage() {
       price: 600,
       category: "books",
       image: "/images2/software.jpeg",
-      description: "Software engineering books second hand, lightly used"
+      description: "Software engineering books second hand, lightly used",
+      status: 'available' // ✅ ADD status field
     },
-    {
-      id: 3,
-      name: "dsa in phython Textbook",
-      price: 400,
-      category: "books",
-      image: "/images2/dsainpython.jpg",
-      description: " Data Structures and Algorithms in Python"
-    },
-    {
-      id: 4,
-      name: "dsa in java Textbook",
-      price: 350,
-      category: "books",
-      image: "/images2/dsainjava.jpg",
-      description: " Data Structures and Algorithms in Java"
-    },
-    {
-      id: 5,
-      name: "calculus Textbook",
-      price: 4500,
-      category: "books",
-      image: "/images2/calc.jpg",
-      description: "calculus Textbook for beginners"
-    },
-    {
-      id: 6,
-      name: "software handwrttin notes",
-      price: 350,
-      category: "books",
-      image: "/images2/handwritten.jpg",
-      description: " full software engineering hand written notes"
-    },
-
-    // ========== GADGETS CATEGORY - Multiple Gadgets ==========
-    {
-      id: 7,
-      name: "Second-hand Laptop",
-      price: 30000,
-      category: "gadgets",
-      image: "/images2/dell.jpg",
-      description: "Dell laptop, 8GB RAM, 256GB SSD, good condition"
-    },
-    {
-      id: 8,
-      name: "simple Calculator",
-      price: 1500,
-      category: "gadgets",
-      image: "/images2/calc2.jpg",
-      description: "simple calculator for engineering students"
-    },
-    {
-      id: 9,
-      name: "Graphing Calculator",
-      price: 1500,
-      category: "gadgets",
-      image: "/images2/cal1.jpg",
-      description: "Scientific calculator for engineering students"
-    },
-    {
-      id: 10,
-      name: "hp laptop",
-      price: 80000,
-      category: "gadgets",
-      image: "/images2/hplap.jpg",
-      description: " hp laptop, 16GB RAM, 512GB ssd, fair condition"
-    },
-    {
-      id: 11,
-      name: "huawei laptop",
-      price: 100000,
-      category: "gadgets",
-      image: "/images2/huawei.jpg",
-      description: " huawei laptop, 16GB RAM, 512GB ssd, fair condition"
-    },
-
-    // ========== STATIONERY CATEGORY - Multiple Items ==========
-    {
-      id: 12,
-      name: "complete set Box",
-      price: 180,
-      category: "stationery",
-      image: "/images2/statcompbox.jpg",
-      description: "Complete set with compass and ruler and pen etc"
-    },
-    {
-      id: 13,
-      name: "Notebook Set",
-      price: 200,
-      category: "stationery",
-      image: "/images2/stat1.jpg",
-      description: "Set of 5 notebooks for different subjects"
-    },
-    {
-      id: 14,
-      name: "Pen Collection",
-      price: 150,
-      category: "stationery",
-      image: "/images2/stat2.jpg",
-      description: "10 high-quality pens for smooth writing"
-    },
-
-    // ========== ACCESSORIES CATEGORY - Multiple Items ==========
-    {
-      id: 15,
-      name: "file folder",
-      price: 150,
-      category: "accessories",
-      image: "/images2/filefolder.jpg",
-      description: "file folder for keeping documents organized"
-    },
-    {
-      id: 16,
-      name: "Book Cover",
-      price: 80,
-      category: "accessories",
-      image: "/images2/bookcvr1.jpg",
-      description: "Protective cover for textbooks"
-    },
-    {
-      id: 17,
-      name: "lunch box",
-      price: 1200,
-      category: "accessories",
-      image: "/images2/lunchbox.jpg",
-      description: "Waterproof backpack for college students"
-    },
-    {
-      id: 18,
-      name: "watter bottle",
-      price: 1200,
-      category: "accessories",
-      image: "/images2/watterbottle.jpg",
-      description: " watter bottle for daily use"
-    },
-    {
-      id: 19,
-      name: "umbrella",
-      price: 1200,
-      category: "accessories",
-      image: "/images2/umbrella.jpg",
-      description: "umbrella for rainy season"
-    }
+    // ... add status: 'available' to ALL your products
   ];
 
   // Filter products by the current category
@@ -215,7 +78,7 @@ function CategoryPage() {
                     style={{ 
                       height: '200px', 
                       objectFit: 'cover',
-                      width: '100%'  // Changed from fixed 300px to 100% for responsiveness
+                      width: '100%'
                     }}
                   />
                   <div className="card-body d-flex flex-column">
@@ -225,8 +88,24 @@ function CategoryPage() {
                     </p>
                     <div className="mt-auto">
                       <p className="h5 text-primary mb-2">Rs. {product.price}</p>
+                      
+                      {/* ✅ ADDED: Add to Cart Button */}
+                      <div className="mb-2">
+                        <AddToCartButton 
+                          product={{
+                            _id: product.id.toString(),
+                            name: product.name,
+                            price: product.price,
+                            image: product.image,
+                            status: product.status || 'available'
+                          }}
+                          size="sm"
+                          showQuantity={false}
+                        />
+                      </div>
+                      
                       <button 
-                        className="btn btn-primary w-100 btn-sm"
+                        className="btn btn-outline-primary w-100 btn-sm"
                         onClick={(e) => {
                           e.stopPropagation(); // Prevent card click when button is clicked
                           handleProductClick(product.id);
