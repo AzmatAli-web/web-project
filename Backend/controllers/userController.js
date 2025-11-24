@@ -27,19 +27,38 @@ const getUserById = async (req, res) => {
   }
 };
 
-// Get current user profile
+// Get current user profile - UPDATED WITH DEBUG LOGGING
 const getCurrentUser = async (req, res) => {
   try {
+    console.log('🟡 getCurrentUser - Request received');
+    console.log('🟡 User ID from token:', req.user.id);
+    console.log('🟡 Token user object:', req.user);
+
+    // Check if req.user.id exists and is valid
+    if (!req.user.id) {
+      console.log('❌ No user ID in request');
+      return res.status(400).json({ message: 'Invalid user ID' });
+    }
+
+    console.log('🟡 Searching for user in database...');
     const user = await User.findById(req.user.id).select('-password');
     
+    console.log('🟡 Database query result:', user);
+
     if (!user) {
+      console.log('❌ User not found in database for ID:', req.user.id);
       return res.status(404).json({ message: 'User not found' });
     }
 
+    console.log('✅ getCurrentUser - Success for user:', user.email);
     res.json(user);
   } catch (error) {
-    console.error('Error fetching current user:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('❌ getCurrentUser - Error details:', error);
+    console.error('❌ Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Server error in getCurrentUser',
+      error: error.message 
+    });
   }
 };
 
@@ -135,7 +154,7 @@ module.exports = {
   getUsers, 
   getUserById, 
   getCurrentUser,
-  updateProfile,  // ✅ ADDED
+  updateProfile,
   approveUser,
   deleteUser
 };
