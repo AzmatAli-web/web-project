@@ -1,54 +1,46 @@
-// controllers/authController.js
 const jwt = require('jsonwebtoken');
-const { users, userIdCounter } = require('../config/database'); // Import your in-memory DB
-
-let currentUserId = userIdCounter; // Use your existing counter
+const User = require('../models/user'); // Import MongoDB User model
 
 const register = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { name, email, password } = req.body;
     
-    console.log('Registration attempt:', { username, email });
+    console.log('Registration attempt:', { name, email });
 
-    // Check if user exists (using your existing users array)
-    const existingUser = users.find(user => user.email === email);
+    // Check if user exists (using MongoDB)
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Create new user matching your existing structure
-    const user = {
-      id: currentUserId++,
-      name: username, // Your DB uses "name" not "username"
+    // Create new user in MongoDB
+    const user = new User({
+      name: name,
       email: email,
-      password: password, // In real app, you should hash this
-      createdAt: new Date()
-    };
+      password: password // In real app, you should hash this
+    });
     
-    // Add to your existing users array
-    users.push(user);
+    await user.save();
 
-    // Generate token
+    // ✅ TOKEN PART - UNCHANGED
     const token = jwt.sign(
-      { id: user.id }, 
+      { id: user._id }, 
       process.env.JWT_SECRET || 'fallback_secret',
       { expiresIn: '1d' }
     );
 
     console.log('✅ SIGNUP SUCCESSFUL:', { 
-      userId: user.id, 
+      userId: user._id, 
       name: user.name,
       email: user.email 
     });
 
-    console.log('📝 Total users now:', users.length);
-
     res.status(201).json({
       message: 'User registered successfully',
-      token,
+      token, // ✅ UNCHANGED
       user: {
-        id: user.id,
-        name: user.name, // Use "name" to match your structure
+        id: user._id, // Now using MongoDB _id
+        name: user.name,
         email: user.email
       }
     });
@@ -65,8 +57,8 @@ const login = async (req, res) => {
 
     console.log('Login attempt:', { email });
 
-    // Find user in your existing users array
-    const user = users.find(u => u.email === email);
+    // Find user in MongoDB
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
@@ -76,25 +68,25 @@ const login = async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Generate token
+    // ✅ TOKEN PART - UNCHANGED
     const token = jwt.sign(
-      { id: user.id },
+      { id: user._id },
       process.env.JWT_SECRET || 'fallback_secret',
       { expiresIn: '1d' }
     );
 
     console.log('✅ LOGIN SUCCESSFUL:', { 
-      userId: user.id, 
+      userId: user._id, 
       name: user.name,
       email: user.email 
     });
 
     res.json({
       message: 'Login successful',
-      token,
+      token, // ✅ UNCHANGED
       user: {
-        id: user.id,
-        name: user.name, // Use "name" to match your structure
+        id: user._id, // Now using MongoDB _id
+        name: user.name,
         email: user.email
       }
     });
@@ -108,7 +100,7 @@ const login = async (req, res) => {
 const verify = async (req, res) => {
   try {
     // User is already attached to req by auth middleware
-    const user = users.find(u => u.id === req.user.id);
+    const user = await User.findById(req.user.id);
     
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -116,8 +108,8 @@ const verify = async (req, res) => {
 
     res.json({
       user: {
-        id: user.id,
-        name: user.name, // Use "name" to match your structure
+        id: user._id, // Now using MongoDB _id
+        name: user.name,
         email: user.email
       }
     });

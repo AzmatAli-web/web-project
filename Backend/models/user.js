@@ -1,11 +1,27 @@
-class User {
-  constructor(email, password, name) {
-    this.id = null;
-    this.email = email;
-    this.password = password;
-    this.name = name;
-    this.createdAt = new Date();
-  }
-}
+const mongoose = require('mongoose');
 
-module.exports = User;
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+// This will create a MongoDB collection called 'users'
+module.exports = mongoose.model('User', userSchema);

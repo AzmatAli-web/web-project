@@ -5,12 +5,15 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
 const listingRoutes = require('./routes/listingRoutes');
-
+const connectDB = require('./config/database');
 const app = express();
-
+connectDB();
 // Simple CORS fix
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: [
+    'http://localhost:5173',
+    'https://web-project-theta-gray.vercel.app/' // Your actual Vercel URL
+  ],
   credentials: true
 }));
 
