@@ -1,76 +1,141 @@
-// // controllers/userController.js
-// let users = [
-//   { id: 1, name: "Azmat Ali", email: "azmat@example.com", role: "admin" },
-//   { id: 2, name: "Fatima Noor", email: "fatima@example.com", role: "user" },
-//   { id: 3, name: "Bilal Ahmed", email: "bilal@example.com", role: "user" },
-// ];
+const User = require('../models/user');
 
-// exports.getUsers = (req, res) => {
-//   res.json(users);
-// };
-
-// exports.getUserById = (req, res) => {
-//   const user = users.find(u => u.id === parseInt(req.params.id));
-//   if (!user) return res.status(404).json({ message: "User not found" });
-//   res.json(user);
-// };
-
-// exports.deleteUser = (req, res) => {
-//   const id = parseInt(req.params.id);
-//   const index = users.findIndex(u => u.id === id);
-//   if (index === -1) return res.status(404).json({ message: "User not found" });
-
-//   users.splice(index, 1);
-//   res.json({ message: "User deleted successfully" });
-// };
-
-// exports.updateUser = (req, res) => {
-//   const id = parseInt(req.params.id);
-//   const index = users.findIndex(u => u.id === id);
-//   if (index === -1) return res.status(404).json({ message: "User not found" });
-
-//   const { name, email, role } = req.body;
-//   users[index] = { ...users[index], name, email, role };
-//   res.json({ message: "User updated successfully", user: users[index] });
-// };
-
-
-const db = require('../config/database'); // Import once
-
-const getUsers = (req, res) => {
-  // Remove passwords from response
-  const usersWithoutPasswords = db.users.map(user => ({
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    createdAt: user.createdAt
-  }));
-  
-  res.json(usersWithoutPasswords);
-};
-
-const getUserById = (req, res) => {
-  const user = db.users.find(u => u.id === parseInt(req.params.id));
-  
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' });
+// Get all users (Admin only)
+const getUsers = async (req, res) => {
+  try {
+    const users = await User.find().select('-password');
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Server error' });
   }
-
-  // Remove password from response
-  const { password, ...userWithoutPassword } = user;
-  res.json(userWithoutPassword);
 };
 
-const getCurrentUser = (req, res) => {
-  const user = db.users.find(u => u.id === req.user.userId);
-  
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' });
+// Get user by ID (Admin only)
+const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ message: 'Server error' });
   }
-
-  // Remove password from response
-  const { password, ...userWithoutPassword } = user;
-  res.json(userWithoutPassword);
 };
 
-module.exports = { getUsers, getUserById, getCurrentUser };
+// Get current user profile
+const getCurrentUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching current user:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ✅ NEW: Update user profile
+const updateProfile = async (req, res) => {
+  try {
+    const { name, email } = req.body;
+    
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if email is already taken by another user
+    if (email && email !== user.email) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Email already taken' });
+      }
+    }
+
+    // Update fields
+    user.name = name || user.name;
+    user.email = email || user.email;
+
+    await user.save();
+
+    // Return user without password
+    const userWithoutPassword = user.toObject();
+    delete userWithoutPassword.password;
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: userWithoutPassword
+    });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Approve user (Admin only)
+const approveUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.status = 'approved';
+    await user.save();
+
+    res.json({ 
+      message: 'User approved successfully',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        status: user.status
+      }
+    });
+  } catch (error) {
+    console.error('Error approving user:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Delete user (Admin only)
+const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user._id.toString() === req.user.id) {
+      return res.status(400).json({ message: 'Cannot delete your own account' });
+    }
+
+    await User.findByIdAndDelete(req.params.id);
+    
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+module.exports = { 
+  getUsers, 
+  getUserById, 
+  getCurrentUser,
+  updateProfile,  // ✅ ADDED
+  approveUser,
+  deleteUser
+};

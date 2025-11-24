@@ -93,7 +93,7 @@ function Signup() {
             <div
               className="h-700"
               style={{
-                backgroundImage: "url('/src/assets/images/signup3.png')",
+                backgroundImage: "url('/images/signup3.png')",
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 minHeight: "1200px"

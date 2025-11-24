@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/user'); // Import MongoDB User model
+const bcrypt = require('bcryptjs'); // ✅ ADD THIS LINE
+const User = require('../models/user');
 
 const register = async (req, res) => {
   try {
@@ -7,22 +8,25 @@ const register = async (req, res) => {
     
     console.log('Registration attempt:', { name, email });
 
-    // Check if user exists (using MongoDB)
+    // Check if user exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Create new user in MongoDB
+    // ✅ MINIMAL CHANGE: Hash password before saving
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create new user with HASHED password
     const user = new User({
       name: name,
       email: email,
-      password: password // In real app, you should hash this
+      password: hashedPassword // ✅ CHANGED: Store hashed password
     });
     
     await user.save();
 
-    // ✅ TOKEN PART - UNCHANGED
+    // Token generation (unchanged)
     const token = jwt.sign(
       { id: user._id }, 
       process.env.JWT_SECRET || 'fallback_secret',
@@ -37,9 +41,9 @@ const register = async (req, res) => {
 
     res.status(201).json({
       message: 'User registered successfully',
-      token, // ✅ UNCHANGED
+      token,
       user: {
-        id: user._id, // Now using MongoDB _id
+        id: user._id,
         name: user.name,
         email: user.email
       }
@@ -57,18 +61,19 @@ const login = async (req, res) => {
 
     console.log('Login attempt:', { email });
 
-    // Find user in MongoDB
+    // Find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Check password (simple comparison for now)
-    if (user.password !== password) {
+    // ✅ MINIMAL CHANGE: Compare hashed password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // ✅ TOKEN PART - UNCHANGED
+    // Token generation (unchanged)
     const token = jwt.sign(
       { id: user._id },
       process.env.JWT_SECRET || 'fallback_secret',
@@ -83,9 +88,9 @@ const login = async (req, res) => {
 
     res.json({
       message: 'Login successful',
-      token, // ✅ UNCHANGED
+      token,
       user: {
-        id: user._id, // Now using MongoDB _id
+        id: user._id,
         name: user.name,
         email: user.email
       }
@@ -97,9 +102,9 @@ const login = async (req, res) => {
   }
 };
 
+// verify function remains unchanged
 const verify = async (req, res) => {
   try {
-    // User is already attached to req by auth middleware
     const user = await User.findById(req.user.id);
     
     if (!user) {
@@ -108,7 +113,7 @@ const verify = async (req, res) => {
 
     res.json({
       user: {
-        id: user._id, // Now using MongoDB _id
+        id: user._id,
         name: user.name,
         email: user.email
       }

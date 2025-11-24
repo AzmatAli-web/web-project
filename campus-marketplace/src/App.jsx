@@ -8,6 +8,7 @@ import CategoryPage from "./Component/CategoryPage";
 import ProductDetail from "./Component/ProductDetail"; // Add this import
 import SellPage from './Component/SellPage';
 import Admin from './Admin';
+import Profile from './Pages/Profile'; // ✅ ADD THIS IMPORT
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -40,6 +41,10 @@ function App() {
     {
       path:"/Admin",
       element:<Admin/>
+    },
+    { // ✅ ADD THIS NEW ROUTE ONLY
+      path:"/profile",
+      element:<Profile/>
     }
   ])
   return (

@@ -1,31 +1,24 @@
-// // routes/userRoutes.js
-// const express = require("express");
-// const router = express.Router();
-// const userController = require("../controllers/userController");
-
-// // GET all users
-// router.get("/", userController.getUsers);
-
-// // GET single user by ID
-// router.get("/:id", userController.getUserById);
-
-// // DELETE user
-// router.delete("/:id", userController.deleteUser);
-
-// // PUT update user
-// router.put("/:id", userController.updateUser);
-
+ 
 // module.exports = router;
-
-
 const express = require('express');
-const { getUsers, getUserById, getCurrentUser } = require('../controllers/userController');
+const { 
+  getUsers, 
+  getUserById, 
+  getCurrentUser,
+  updateProfile,  // ✅ ADD
+  approveUser,      
+  deleteUser        
+} = require('../controllers/userController');
 const auth = require('../middleware/auth');
+const adminAuth = require('../middleware/adminAuth');
 
 const router = express.Router();
 
-router.get('/', getUsers);
+router.get('/', auth, adminAuth, getUsers);        
 router.get('/me', auth, getCurrentUser);
-router.get('/:id', getUserById);
+router.get('/:id', auth, adminAuth, getUserById);  
+router.put('/profile', auth, updateProfile);        // ✅ NEW ROUTE
+router.put('/:id/approve', auth, adminAuth, approveUser);
+router.delete('/:id', auth, adminAuth, deleteUser);
 
 module.exports = router;
