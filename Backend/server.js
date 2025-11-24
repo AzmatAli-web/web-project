@@ -12,7 +12,8 @@ connectDB();
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://web-project-theta-gray.vercel.app/' // Your actual Vercel URL
+    'https://web-project-theta-gray.vercel.app', // Remove extra "https:" and trailing slash
+   
   ],
   credentials: true
 }));
