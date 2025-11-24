@@ -1,7 +1,8 @@
 // authService.js
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+// Use environment variable for API URL with localhost fallback
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export const authService = {
   register: async (userData) => {
@@ -16,6 +17,7 @@ export const authService = {
       
       console.log('Registration successful:', response.data);
       
+      // ✅ TOKEN STORAGE - UNCHANGED
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
@@ -27,7 +29,6 @@ export const authService = {
     }
   },
 
-  // ADD LOGIN FUNCTION - similar to register but for login endpoint
   login: async (credentials) => {
     try {
       console.log('Sending login request...', credentials);
@@ -40,6 +41,7 @@ export const authService = {
       
       console.log('Login successful:', response.data);
       
+      // ✅ TOKEN STORAGE - UNCHANGED
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
@@ -51,7 +53,7 @@ export const authService = {
     }
   },
 
-  // Optional: Add other auth functions you might need
+  // ✅ ALL TOKEN-RELATED FUNCTIONS - UNCHANGED
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
