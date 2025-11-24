@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
+const API_URL = import.meta.env.VITE_API_URL || 'https://accurate-compassion-production.up.railway.app/api';
 
 // Create axios instance with common config
 const api = axios.create({
@@ -45,6 +44,36 @@ const userService = {
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to fetch user products';
+    }
+  },
+
+  // ✅ ADDED: Get all users (admin only)
+  getAllUsers: async () => {
+    try {
+      const response = await api.get('/users');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to fetch users';
+    }
+  },
+
+  // ✅ ADDED: Approve user (admin only)
+  approveUser: async (userId) => {
+    try {
+      const response = await api.put(`/users/${userId}/approve`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to approve user';
+    }
+  },
+
+  // ✅ ADDED: Delete user (admin only)
+  deleteUser: async (userId) => {
+    try {
+      const response = await api.delete(`/users/${userId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to delete user';
     }
   }
 };

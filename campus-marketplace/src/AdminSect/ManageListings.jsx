@@ -1,136 +1,298 @@
 import React, { useState, useEffect } from 'react';
-import { z } from 'zod';
 import './Stylng.css';
-import { listingService } from '../services/sellpage'; // Import listing service
-
-// Zod schema for a single listing
-const listingSchema = z.object({
-  id: z.number().int().positive(),
-  title: z.string(),
-  seller: z.string(),
-  status: z.enum(['Pending', 'Approved']),
-});
-
-// Zod schema for array of listings
-const listingsArraySchema = z.array(listingSchema);
+import productService from '../services/productService'; // ✅ Use product service
 
 const ManageListings = () => {
-  const [listings, setListings] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [actionLoading, setActionLoading] = useState(null);
+  const [filter, setFilter] = useState('all'); // all, available, sold, pending
 
-  // Load listings from backend on component mount
+  // Load products from backend on component mount
   useEffect(() => {
-    fetchListings();
+    fetchProducts();
   }, []);
 
-  const fetchListings = async () => {
+  const fetchProducts = async () => {
     setLoading(true);
     setError(null);
     try {
-      // Use listingService to fetch listings from backend
-      const listingsData = await listingService.getAllListings();
-      
-      // Validate using Zod
-      const result = listingsArraySchema.safeParse(listingsData);
-
-      if (result.success) {
-        setListings(result.data);
-      } else {
-        console.error("Zod validation error:", result.error);
-        setError("Invalid data format");
-      }
+      // Use productService to fetch all products from backend
+      const productsData = await productService.getAllProducts();
+      setProducts(productsData || []);
     } catch (err) {
-      console.error("Failed to load listings:", err);
-      setError(err.message || "Failed to load listings");
+      console.error("Failed to load products:", err);
+      setError(err.message || "Failed to load products");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleApprove = async (id) => {
+  const handleApprove = async (productId) => {
+    setActionLoading(productId);
     try {
-      // Use listingService to approve listing
-      await listingService.approveListing(id);
-      setListings(
-        listings.map((l) =>
-          l.id === id ? { ...l, status: 'Approved' } : l
-        )
-      );
-      console.log("Listing approved:", id);
+      // Update product status to approved
+      await productService.updateProduct(productId, { status: 'available' });
+      setProducts(prev => prev.map(product => 
+        product._id === productId ? { ...product, status: 'available' } : product
+      ));
+      alert('Product approved successfully!');
     } catch (err) {
-      console.error("Error updating listing:", err);
-      alert("Failed to approve listing");
+      console.error("Error approving product:", err);
+      alert("Failed to approve product: " + (err.message || 'Please try again'));
+    } finally {
+      setActionLoading(null);
     }
   };
 
-  const handleRemove = async (id) => {
-    if (!window.confirm("Are you sure you want to remove this listing?")) return;
+  const handleDelete = async (productId) => {
+    if (!window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) return;
     
+    setActionLoading(productId);
     try {
-      // Use listingService to delete listing
-      await listingService.deleteListing(id);
-      setListings(listings.filter((l) => l.id !== id));
-      console.log("Listing removed:", id);
+      await productService.deleteProduct(productId);
+      setProducts(prev => prev.filter(product => product._id !== productId));
+      alert('Product deleted successfully!');
     } catch (err) {
-      console.error("Error removing listing:", err);
-      alert("Failed to remove listing");
+      console.error("Error deleting product:", err);
+      alert("Failed to delete product: " + (err.message || 'Please try again'));
+    } finally {
+      setActionLoading(null);
     }
   };
 
-  if (loading) return <div className="admin-page"><p>Loading listings...</p></div>;
-  if (error) return <div className="admin-page"><p style={{ color: 'red' }}>{error}</p></div>;
+  const handleEdit = (product) => {
+    alert(`Edit feature for "${product.name}" coming soon`);
+  };
+
+  // Filter products based on status
+  const filteredProducts = products.filter(product => {
+    if (filter === 'all') return true;
+    return product.status === filter;
+  });
+
+  const getStatusBadge = (status) => {
+    const statusConfig = {
+      available: { class: 'bg-success', text: 'Available' },
+      sold: { class: 'bg-secondary', text: 'Sold' },
+      pending: { class: 'bg-warning', text: 'Pending' }
+    };
+    
+    const config = statusConfig[status] || statusConfig.pending;
+    return <span className={`badge ${config.class} text-white`}>{config.text}</span>;
+  };
+
+  const getCategoryBadge = (category) => {
+    return <span className="badge bg-info text-white text-capitalize">{category}</span>;
+  };
+
+  if (loading) return (
+    <div className="admin-page">
+      <div className="text-center py-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <p className="mt-2">Loading products...</p>
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="admin-page">
+      <div className="alert alert-danger" role="alert">
+        {error}
+        <div className="mt-2">
+          <button className="btn btn-sm btn-outline-danger" onClick={fetchProducts}>
+            Try Again
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="admin-page">
-      <h2>🏠 Manage Listings</h2>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>🏠 Manage Products</h2>
+        <button className="btn btn-outline-primary btn-sm" onClick={fetchProducts}>
+          🔄 Refresh
+        </button>
+      </div>
 
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Title</th>
-            <th>Seller</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+      {/* Filters */}
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="row align-items-center">
+            <div className="col-md-6">
+              <h6 className="mb-2">Filter by Status:</h6>
+              <div className="btn-group btn-group-sm">
+                <button 
+                  className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-outline-primary'}`}
+                  onClick={() => setFilter('all')}
+                >
+                  All
+                </button>
+                <button 
+                  className={`btn ${filter === 'available' ? 'btn-success' : 'btn-outline-success'}`}
+                  onClick={() => setFilter('available')}
+                >
+                  Available
+                </button>
+                <button 
+                  className={`btn ${filter === 'pending' ? 'btn-warning' : 'btn-outline-warning'}`}
+                  onClick={() => setFilter('pending')}
+                >
+                  Pending
+                </button>
+                <button 
+                  className={`btn ${filter === 'sold' ? 'btn-secondary' : 'btn-outline-secondary'}`}
+                  onClick={() => setFilter('sold')}
+                >
+                  Sold
+                </button>
+              </div>
+            </div>
+            <div className="col-md-6 text-end">
+              <small className="text-muted">
+                Showing {filteredProducts.length} of {products.length} products
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        <tbody>
-          {listings.length > 0 ? (
-            listings.map((listing) => (
-              <tr key={listing.id}>
-                <td>{listing.id}</td>
-                <td>{listing.title}</td>
-                <td>{listing.seller}</td>
-                <td>{listing.status}</td>
-
-                <td>
-                  {listing.status !== 'Approved' && (
-                    <button
-                      className="approve-btn"
-                      onClick={() => handleApprove(listing.id)}
-                    >
-                      Approve
-                    </button>
-                  )}
-
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleRemove(listing.id)}
-                  >
-                    Remove
-                  </button>
-                </td>
-              </tr>
-            ))
+      <div className="card">
+        <div className="card-body">
+          {filteredProducts.length > 0 ? (
+            <div className="table-responsive">
+              <table className="table table-striped table-hover">
+                <thead className="table-dark">
+                  <tr>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Seller</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredProducts.map((product) => (
+                    <tr key={product._id}>
+                      <td>
+                        <img 
+                          src={product.image || '/images/default-product.jpg'} 
+                          alt={product.name}
+                          className="rounded"
+                          style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                        />
+                      </td>
+                      <td>
+                        <strong>{product.name}</strong>
+                        <br />
+                        <small className="text-muted">{product.description?.substring(0, 50)}...</small>
+                      </td>
+                      <td>{getCategoryBadge(product.category)}</td>
+                      <td>
+                        <strong className="text-primary">Rs. {product.price}</strong>
+                      </td>
+                      <td>{getStatusBadge(product.status)}</td>
+                      <td>
+                        {product.seller?.name || 'Unknown'}
+                        <br />
+                        <small className="text-muted">{product.seller?.email}</small>
+                      </td>
+                      <td>
+                        <div className="btn-group btn-group-sm">
+                          {product.status === 'pending' && (
+                            <button 
+                              className="btn btn-success"
+                              onClick={() => handleApprove(product._id)}
+                              disabled={actionLoading === product._id}
+                              title="Approve Product"
+                            >
+                              {actionLoading === product._id ? (
+                                <span className="spinner-border spinner-border-sm" />
+                              ) : (
+                                '✓ Approve'
+                              )}
+                            </button>
+                          )}
+                          
+                          <button 
+                            className="btn btn-outline-primary"
+                            onClick={() => handleEdit(product)}
+                            title="Edit Product"
+                          >
+                            Edit
+                          </button>
+                          
+                          <button 
+                            className="btn btn-outline-danger"
+                            onClick={() => handleDelete(product._id)}
+                            disabled={actionLoading === product._id}
+                            title="Delete Product"
+                          >
+                            {actionLoading === product._id ? (
+                              <span className="spinner-border spinner-border-sm" />
+                            ) : (
+                              'Delete'
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
-            <tr>
-              <td colSpan="5">No listings found</td>
-            </tr>
+            <div className="text-center py-4">
+              <p className="text-muted">
+                {products.length === 0 ? 'No products found in the system.' : 'No products match the selected filter.'}
+              </p>
+            </div>
           )}
-        </tbody>
-      </table>
+        </div>
+      </div>
+
+      {/* Quick Stats */}
+      <div className="row mt-4">
+        <div className="col-md-3">
+          <div className="card bg-primary text-white">
+            <div className="card-body text-center">
+              <h4>{products.length}</h4>
+              <small>Total Products</small>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-3">
+          <div className="card bg-success text-white">
+            <div className="card-body text-center">
+              <h4>{products.filter(p => p.status === 'available').length}</h4>
+              <small>Available</small>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-3">
+          <div className="card bg-warning text-white">
+            <div className="card-body text-center">
+              <h4>{products.filter(p => p.status === 'pending').length}</h4>
+              <small>Pending</small>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-3">
+          <div className="card bg-secondary text-white">
+            <div className="card-body text-center">
+              <h4>{products.filter(p => p.status === 'sold').length}</h4>
+              <small>Sold</small>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -24,7 +24,7 @@ const getCart = async (req, res) => {
   }
 };
 
-// Add item to cart
+// Add item to cart - FIXED FOR NUMERIC IDs
 const addToCart = async (req, res) => {
   try {
     const { productId, quantity = 1 } = req.body;
@@ -34,11 +34,17 @@ const addToCart = async (req, res) => {
       return res.status(400).json({ message: 'Product ID is required' });
     }
 
-    // Check if product exists
-    const product = await Product.findById(productId);
+    console.log('🟡 Looking for product with ID:', productId);
+
+    // ✅ FIXED: Find product by numeric ID instead of MongoDB _id
+    const product = await Product.findOne({ id: parseInt(productId) });
+    
     if (!product) {
+      console.log('❌ Product not found for ID:', productId);
       return res.status(404).json({ message: 'Product not found' });
     }
+
+    console.log('✅ Product found:', product.name);
 
     // Check if product is available
     if (product.status !== 'available') {
@@ -57,7 +63,7 @@ const addToCart = async (req, res) => {
 
     // Check if item already exists in cart
     const existingItemIndex = cart.items.findIndex(
-      item => item.product.toString() === productId
+      item => item.product.toString() === product._id.toString()
     );
 
     if (existingItemIndex > -1) {
@@ -66,7 +72,7 @@ const addToCart = async (req, res) => {
     } else {
       // Add new item to cart
       cart.items.push({
-        product: productId,
+        product: product._id, // Store MongoDB _id in cart
         quantity: quantity,
         price: product.price
       });
@@ -81,17 +87,23 @@ const addToCart = async (req, res) => {
     });
   } catch (error) {
     console.error('Error adding to cart:', error);
-    res.status(500).json({ message: 'Server error adding to cart' });
+    res.status(500).json({ message: 'Server error adding to cart: ' + error.message });
   }
 };
 
-// Update cart item quantity
+// Update cart item quantity - FIXED FOR NUMERIC IDs
 const updateCartItem = async (req, res) => {
   try {
     const { productId, quantity } = req.body;
 
     if (!productId || quantity < 1) {
       return res.status(400).json({ message: 'Valid product ID and quantity are required' });
+    }
+
+    // ✅ FIXED: Find product by numeric ID to get MongoDB _id
+    const product = await Product.findOne({ id: parseInt(productId) });
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
     }
 
     const cart = await Cart.findOne({ user: req.user.id });
@@ -101,7 +113,7 @@ const updateCartItem = async (req, res) => {
     }
 
     const itemIndex = cart.items.findIndex(
-      item => item.product.toString() === productId
+      item => item.product.toString() === product._id.toString()
     );
 
     if (itemIndex === -1) {
@@ -129,10 +141,16 @@ const updateCartItem = async (req, res) => {
   }
 };
 
-// Remove item from cart
+// Remove item from cart - FIXED FOR NUMERIC IDs
 const removeFromCart = async (req, res) => {
   try {
     const { productId } = req.params;
+
+    // ✅ FIXED: Find product by numeric ID to get MongoDB _id
+    const product = await Product.findOne({ id: parseInt(productId) });
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
 
     const cart = await Cart.findOne({ user: req.user.id });
 
@@ -141,7 +159,7 @@ const removeFromCart = async (req, res) => {
     }
 
     cart.items = cart.items.filter(
-      item => item.product.toString() !== productId
+      item => item.product.toString() !== product._id.toString()
     );
 
     await cart.save();
