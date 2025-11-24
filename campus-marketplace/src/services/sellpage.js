@@ -25,15 +25,24 @@ function SellPage() {
     setLoading(true);
 
     try {
-      await productService.createProduct({
-        ...formData,
+      // ✅ REMOVE the 'id' field - let MongoDB generate _id automatically
+      const productData = {
+        name: formData.name,
         price: Number(formData.price),
-        id: Date.now() // Simple ID for practice
-      });
+        description: formData.description,
+        category: formData.category,
+        image: formData.image || '/images/default-product.jpg'
+      };
+
+      console.log('🟡 Sending product data:', productData);
+      
+      const result = await productService.createProduct(productData);
+      console.log('✅ Product created successfully:', result);
       
       alert('Product listed successfully!');
-      navigate('/'); // Go to homepage after success
+      navigate('/');
     } catch (error) {
+      console.error('❌ Error creating product:', error);
       alert('Error: ' + error.message);
     } finally {
       setLoading(false);
@@ -49,7 +58,7 @@ function SellPage() {
             <div className="card-body">
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
-                  <label className="form-label">Product Name</label>
+                  <label className="form-label">Product Name *</label>
                   <input
                     type="text"
                     name="name"
@@ -61,7 +70,7 @@ function SellPage() {
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label">Price (Rs.)</label>
+                  <label className="form-label">Price (Rs.) *</label>
                   <input
                     type="number"
                     name="price"
@@ -69,11 +78,12 @@ function SellPage() {
                     onChange={handleChange}
                     className="form-control"
                     required
+                    min="1"
                   />
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label">Category</label>
+                  <label className="form-label">Category *</label>
                   <select
                     name="category"
                     value={formData.category}
@@ -88,7 +98,7 @@ function SellPage() {
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label">Description</label>
+                  <label className="form-label">Description *</label>
                   <textarea
                     name="description"
                     value={formData.description}
@@ -109,6 +119,7 @@ function SellPage() {
                     className="form-control"
                     placeholder="/images2/product.jpg"
                   />
+                  <small className="text-muted">Leave empty for default image</small>
                 </div>
 
                 <button 

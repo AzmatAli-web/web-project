@@ -39,6 +39,7 @@ const addToCart = async (req, res) => {
     // ✅ FIXED: Find product by numeric ID instead of MongoDB _id
     const product = await Product.findOne({ id: parseInt(productId) });
     
+    
     if (!product) {
       console.log('❌ Product not found for ID:', productId);
       return res.status(404).json({ message: 'Product not found' });
