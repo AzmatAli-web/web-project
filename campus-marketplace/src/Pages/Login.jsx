@@ -1,161 +1,157 @@
-import { useState } from "react";
-import { z } from "zod";
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { authService } from '../services/authService';
 
-// ZOD SCHEMA
-const loginSchema = z.object({
-  email: z.string().email("Invalid email format"),
-  password: z.string().min(1, "Password is required"),
-});
-
-function Login({ onSubmit }) {
+const Login = () => {
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+    email: '',
+    password: ''
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const [errors, setErrors] = useState({});
-
-  // Handle input
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
-  // Submit handler (UI-only). Calls `onSubmit` prop if provided.
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
 
-    // Zod validation
-    const validation = loginSchema.safeParse(formData);
+    try {
+      console.log('Login attempt:', formData); // Debug log
+      
+      const response = await authService.login({
+        email: formData.email,
+        password: formData.password
+      });
 
-    if (!validation.success) {
-      const formErrors = {};
-      if (validation.error && validation.error.errors) {
-        validation.error.errors.forEach((err) => {
-          formErrors[err.path[0]] = err.message;
-        });
-      }
-      setErrors(formErrors);
-      return;
-    }
-
-    setErrors({});
-
-    // Delegate actual API call to parent/service via prop
-    if (typeof onSubmit === "function") {
-      try {
-        onSubmit(formData);
-      } catch (err) {
-        // Keep component UI-only; log errors from external handler
-        // Parent/service should handle errors and navigation
-        // eslint-disable-next-line no-console
-        console.error("onSubmit handler error:", err);
-      }
-    } else {
-      // No API handler provided; just log the data
-      // eslint-disable-next-line no-console
-      console.log("Login submitted (no handler provided):", formData);
+      console.log('Login successful:', response); // Debug log
+      navigate('/');
+      
+    } catch (error) {
+      console.error('Login error:', error); // Debug log
+      setError(error.message || 'Login failed');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div
-      className="container-fluid min-vh-100 d-flex align-items-center justify-content-center"
-      style={{
-        backgroundImage: "url('/src/assets/images/loginimg3.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      <div
-        className="card position-relative"
-        style={{
-          width: "100%",
-          maxWidth: "400px",
-          backgroundColor: "rgba(255, 255, 255, 0.3)",
-          borderRadius: "15px",
-        }}
-      >
-        <div className="card-body p-4">
-          <div className="text-center mb-4">
-            <h1 className="fw-bold mb-1" style={{ fontSize: "30px", color: "#1a1a1a" }}>
-              WELCOME
-            </h1>
-            <h2 className="h5 text-muted" style={{ fontSize: "24px", color: "#333" }}>
-              BACK!
-            </h2>
+    <div style={styles.container}>
+      <div style={styles.formContainer}>
+        <h2>Login</h2>
+        <form onSubmit={handleSubmit} style={styles.form}>
+          {error && <div style={styles.error}>{error}</div>}
+          
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              style={styles.input}
+              placeholder="Enter your email"
+            />
           </div>
 
-          <form onSubmit={handleSubmit}>
-            {/* Email Field */}
-            <div className="mb-3">
-              <input
-                type="email"
-                className={`form-control ${errors.email ? "is-invalid" : ""}`}
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Email"
-                style={{ borderRadius: "8px", padding: "12px" }}
-              />
-              {errors.email && <div className="invalid-feedback d-block">{errors.email}</div>}
-            </div>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Password</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              style={styles.input}
+              placeholder="Enter your password"
+            />
+          </div>
 
-            {/* Password Field */}
-            <div className="mb-4">
-              <input
-                type="password"
-                className={`form-control ${errors.password ? "is-invalid" : ""}`}
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Password"
-                style={{ borderRadius: "8px", padding: "12px" }}
-              />
-              {errors.password && (
-                <div className="invalid-feedback d-block">{errors.password}</div>
-              )}
-            </div>
+          <button 
+            type="submit" 
+            style={styles.button}
+            disabled={loading}
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
 
-            {/* Forgot Password */}
-            <div className="text-end mb-4">
-              <a href="/forgot-password" className="text-decoration-none text-primary">
-                Forgot password?
-              </a>
-            </div>
-
-            {/* Login Button */}
-            <button
-              type="submit"
-              className="btn w-100 mb-3 text-white fw-bold border-0"
-              style={{
-                padding: "12px",
-                backgroundColor: "#5cb85c",
-                borderRadius: "8px",
-                fontSize: "18px",
-              }}
-            >
-              LOG IN
-            </button>
-
-            {/* Signup Redirect */}
-            <div className="text-center">
-              <p className="text-muted mb-0">
-                Don't have an account?{" "}
-                <a href="/signup" className="text-decoration-none text-primary">
-                  Sign up
-                </a>
-              </p>
-            </div>
-          </form>
-        </div>
+          <p style={styles.signupLink}>
+            Don't have an account? <Link to="/signup">Sign up here</Link>
+          </p>
+        </form>
       </div>
     </div>
   );
-}
+};
+
+const styles = {
+  container: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: '100vh',
+    backgroundColor: '#f5f5f5',
+    padding: '20px'
+  },
+  formContainer: {
+    backgroundColor: 'white',
+    padding: '40px',
+    borderRadius: '8px',
+    boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+    width: '100%',
+    maxWidth: '400px'
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  inputGroup: {
+    marginBottom: '20px'
+  },
+  label: {
+    display: 'block',
+    marginBottom: '5px',
+    fontWeight: 'bold',
+    color: '#333'
+  },
+  input: {
+    width: '100%',
+    padding: '12px',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    fontSize: '16px',
+    boxSizing: 'border-box'
+  },
+  button: {
+    padding: '12px',
+    backgroundColor: '#007bff',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '16px',
+    cursor: 'pointer',
+    marginBottom: '15px'
+  },
+  error: {
+    backgroundColor: '#f8d7da',
+    color: '#721c24',
+    padding: '10px',
+    borderRadius: '4px',
+    marginBottom: '20px',
+    border: '1px solid #f5c6cb'
+  },
+  signupLink: {
+    textAlign: 'center',
+    color: '#666'
+  }
+};
 
 export default Login;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Stylng.css";
+import { userService } from "../services/manageUser"; // Import user service
 
 const ManageUsers = ({ onFetch, onDelete }) => {
   const [users, setUsers] = useState([]);
@@ -10,21 +11,15 @@ const ManageUsers = ({ onFetch, onDelete }) => {
   const fetchUsers = async () => {
     setLoading(true);
     setError(null);
-    if (typeof onFetch === "function") {
-      try {
-        const res = await onFetch();
-        // Expect `onFetch` to return an array of users
-        setUsers(res || []);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to fetch users");
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      // No fetch handler provided — remain UI-only
-      // eslint-disable-next-line no-console
-      console.log("ManageUsers: no onFetch handler provided");
+    
+    try {
+      // Use userService to fetch users
+      const userData = await userService.getAllUsers();
+      setUsers(userData || []);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to fetch users");
+    } finally {
       setLoading(false);
     }
   };
@@ -35,17 +30,14 @@ const ManageUsers = ({ onFetch, onDelete }) => {
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
-    if (typeof onDelete === "function") {
-      try {
-        await onDelete(id);
-        setUsers((prev) => prev.filter((u) => u.id !== id));
-      } catch (err) {
-        console.error(err);
-        alert("Failed to delete user");
-      }
-    } else {
-      // No delete handler provided — perform local removal only
+    
+    try {
+      // Use userService to delete user
+      await userService.deleteUser(id);
       setUsers((prev) => prev.filter((u) => u.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete user");
     }
   };
 

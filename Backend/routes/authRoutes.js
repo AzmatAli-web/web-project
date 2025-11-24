@@ -1,18 +1,16 @@
-const express = require("express");
+ 
+
+// routes/authRoutes.js
+const express = require('express');
 const router = express.Router();
-const { signup, login } = require("../controllers/authController");
+const { register, login, verify } = require('../controllers/authController');
+const auth = require('../middleware/auth');
 
-// GET route to test in browser
-router.get("/signup", (req, res) => {
-  res.send("This is signup page route working.");
-});
+// PUBLIC routes - NO auth middleware
+router.post('/register', register);
+router.post('/login', login);
 
-router.get("/login", (req, res) => {
-  res.send("This is login page route working.");
-});
-
-// Actual POST routes
-router.post("/signup", signup);
-router.post("/login", login);
+// PROTECTED routes - WITH auth middleware  
+router.get('/verify', auth, verify);
 
 module.exports = router;

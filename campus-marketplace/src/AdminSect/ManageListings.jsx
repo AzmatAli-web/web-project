@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
-import * as authService from '../services/authService';
 import './Stylng.css';
+import { listingService } from '../services/sellpage'; // Import listing service
 
 // Zod schema for a single listing
 const listingSchema = z.object({
@@ -19,7 +19,7 @@ const ManageListings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch listings from backend
+  // Load listings from backend on component mount
   useEffect(() => {
     fetchListings();
   }, []);
@@ -28,20 +28,21 @@ const ManageListings = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await authService.getListings();
+      // Use listingService to fetch listings from backend
+      const listingsData = await listingService.getAllListings();
       
       // Validate using Zod
-      const result = listingsArraySchema.safeParse(data);
+      const result = listingsArraySchema.safeParse(listingsData);
 
       if (result.success) {
         setListings(result.data);
       } else {
         console.error("Zod validation error:", result.error);
-        setError("Invalid data format from server");
+        setError("Invalid data format");
       }
     } catch (err) {
-      console.error("Failed to fetch listings:", err);
-      setError(err.message || "Failed to fetch listings");
+      console.error("Failed to load listings:", err);
+      setError(err.message || "Failed to load listings");
     } finally {
       setLoading(false);
     }
@@ -49,15 +50,17 @@ const ManageListings = () => {
 
   const handleApprove = async (id) => {
     try {
-      await authService.approveListing(id);
+      // Use listingService to approve listing
+      await listingService.approveListing(id);
       setListings(
         listings.map((l) =>
           l.id === id ? { ...l, status: 'Approved' } : l
         )
       );
+      console.log("Listing approved:", id);
     } catch (err) {
-      console.error("Failed to approve listing:", err);
-      alert(err.message || "Failed to approve listing");
+      console.error("Error updating listing:", err);
+      alert("Failed to approve listing");
     }
   };
 
@@ -65,11 +68,13 @@ const ManageListings = () => {
     if (!window.confirm("Are you sure you want to remove this listing?")) return;
     
     try {
-      await authService.removeListing(id);
+      // Use listingService to delete listing
+      await listingService.deleteListing(id);
       setListings(listings.filter((l) => l.id !== id));
+      console.log("Listing removed:", id);
     } catch (err) {
-      console.error("Failed to remove listing:", err);
-      alert(err.message || "Failed to remove listing");
+      console.error("Error removing listing:", err);
+      alert("Failed to remove listing");
     }
   };
 

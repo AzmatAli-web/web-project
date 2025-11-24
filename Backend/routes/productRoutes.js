@@ -1,20 +1,19 @@
-const express = require("express");
+ const express = require('express');
+const {
+  getProducts,
+  getProductById,
+  createProduct,
+  updateProduct,
+  deleteProduct
+} = require('../controllers/productController');
+const auth = require('../middleware/auth');
+
 const router = express.Router();
-const productController = require("../controllers/productController");
 
-// GET all products
-router.get("/", productController.getAllProducts);
-
-// GET product by ID
-router.get("/:id", productController.getProductById);
-
-// POST create new product (with optional file upload)
-router.post("/", productController.createProduct);
-
-// PUT update product
-router.put("/:id", productController.updateProduct);
-
-// DELETE product
-router.delete("/:id", productController.deleteProduct);
+router.get('/', getProducts);
+router.get('/:id', getProductById);
+router.post('/', auth, createProduct);
+router.put('/:id', auth, updateProduct);
+router.delete('/:id', auth, deleteProduct);
 
 module.exports = router;

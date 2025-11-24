@@ -2,34 +2,25 @@ import { useState } from "react";
 import { z } from "zod";
 import FormInput from "../Component/FormInput";
 import Button from "../Component/Button";
+import { authService } from "../services/authService";
+import { useNavigate } from "react-router-dom";
 
-// ------------------ Field-level Zod schemas ------------------
-const fullNameSchema = z.string().min(3, "Full name must be at least 3 characters");
-const emailSchema = z.string().email("Invalid email address");
-const studentIdSchema = z.string().min(1, "Student ID is required");
-const passwordSchema = z.string().min(8, "Password must be at least 8 characters");
-const agreeToTermsSchema = z.boolean().refine(val => val === true, "You must agree to the terms");
+// Updated schema to match formData field names
+const formSchema = z.object({
+  name: z.string().min(2, "Full name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string(),
+  agreeToTerms: z.boolean().refine(val => val === true, "You must agree to the terms")
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"]
+});
 
-// Form-level schema for cross-field validation (password match)
-const formSchema = z
-  .object({
-    fullName: fullNameSchema,
-    email: emailSchema,
-    studentId: studentIdSchema,
-    password: passwordSchema,
-    confirmPassword: z.string(),
-    agreeToTerms: agreeToTermsSchema
-  })
-  .refine(data => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"]
-  });
-
-function Signup({ onSubmit }) {
+function Signup() {
   const [formData, setFormData] = useState({
-    fullName: "",
+    name: "",
     email: "",
-    studentId: "",
     password: "",
     confirmPassword: "",
     agreeToTerms: false
@@ -37,6 +28,7 @@ function Signup({ onSubmit }) {
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -45,6 +37,7 @@ function Signup({ onSubmit }) {
       [name]: type === "checkbox" ? checked : value
     }));
 
+    // Clear error when user types
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: "" }));
     }
@@ -52,10 +45,13 @@ function Signup({ onSubmit }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Submit button clicked");
+    console.log("Form data:", formData);
 
     const result = formSchema.safeParse(formData);
 
     if (!result.success) {
+      console.log("Validation failed:", result.error);
       const formErrors = {};
       result.error.errors.forEach(err => {
         if (err.path[0]) formErrors[err.path[0]] = err.message;
@@ -64,38 +60,30 @@ function Signup({ onSubmit }) {
       return;
     }
 
-    setErrors({});
-    setLoading(true);
-
-    if (typeof onSubmit === "function") {
-      try {
-        // Delegate API call to parent/service
-        await onSubmit({
-          fullName: formData.fullName,
-          email: formData.email,
-          studentId: formData.studentId,
-          password: formData.password
-        });
-      } catch (err) {
-        // Parent/service should handle errors; log here for debugging
-        // eslint-disable-next-line no-console
-        console.error("onSubmit error:", err);
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      // No handler provided; keep component UI-only and log submitted data
-      // eslint-disable-next-line no-console
-      console.log("Signup submitted (no handler provided):", {
-        fullName: formData.fullName,
+    try {
+      setLoading(true);
+      console.log("Sending registration request...");
+      
+      // Send the data that matches your backend structure
+      const response = await authService.register({
+        name: formData.name,
         email: formData.email,
-        studentId: formData.studentId,
         password: formData.password
       });
+      
+      console.log("Registration successful:", response);
+      
+      // Handle success (redirect, show message, etc.)
+      navigate('/login');
+      
+    } catch (error) {
+      console.error("Registration failed:", error);
+      setErrors({ submit: error.message });
+    } finally {
       setLoading(false);
     }
   };
-
+  
   return (
     <div className="container-fluid min-vh-300 d-flex align-items-center justify-content-center bg-light p-3 p-md-5">
       <div className="card shadow-lg overflow-hidden" style={{ width: "100%", borderRadius: "15px" }}>
@@ -128,15 +116,21 @@ function Signup({ onSubmit }) {
                 <h2 className="h5 text-muted mt-2">Join Campus Marketplace</h2>
               </div>
 
+              {/* Show backend error message */}
+              {errors.submit && (
+                <div className="alert alert-danger" role="alert">
+                  {errors.submit}
+                </div>
+              )}
+
               <form onSubmit={handleSubmit}>
                 <FormInput
                   label="Full Name"
-                  name="fullName"
-                  value={formData.fullName}
+                  name="name"
+                  value={formData.name}
                   onChange={handleChange}
                   placeholder="Enter your full name"
-                  zodSchema={fullNameSchema}
-                  setError={(field, message) => setErrors(prev => ({ ...prev, [field]: message }))}
+                  error={errors.name}
                 />
 
                 <FormInput
@@ -146,18 +140,7 @@ function Signup({ onSubmit }) {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="student@campus.edu"
-                  zodSchema={emailSchema}
-                  setError={(field, message) => setErrors(prev => ({ ...prev, [field]: message }))}
-                />
-
-                <FormInput
-                  label="Student ID"
-                  name="studentId"
-                  value={formData.studentId}
-                  onChange={handleChange}
-                  placeholder="Enter your student ID"
-                  zodSchema={studentIdSchema}
-                  setError={(field, message) => setErrors(prev => ({ ...prev, [field]: message }))}
+                  error={errors.email}
                 />
 
                 <FormInput
@@ -166,9 +149,8 @@ function Signup({ onSubmit }) {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="Create a password"
-                  zodSchema={passwordSchema}
-                  setError={(field, message) => setErrors(prev => ({ ...prev, [field]: message }))}
+                  placeholder="Create a password (min 6 characters)"
+                  error={errors.password}
                 />
 
                 <FormInput
@@ -178,6 +160,7 @@ function Signup({ onSubmit }) {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   placeholder="Confirm your password"
+                  error={errors.confirmPassword}
                 />
 
                 <div className="mb-4">
@@ -197,8 +180,14 @@ function Signup({ onSubmit }) {
                   {errors.agreeToTerms && <div className="invalid-feedback d-block">{errors.agreeToTerms}</div>}
                 </div>
 
-                <Button type="submit" loading={loading} disabled={loading} className="w-100 mb-3" size="lg">
-                  Create Account
+                <Button 
+                  type="submit" 
+                  loading={loading} 
+                  disabled={loading} 
+                  className="w-100 mb-3" 
+                  size="lg"
+                >
+                  {loading ? "Creating Account..." : "Create Account"}
                 </Button>
 
                 <div className="text-center">
@@ -209,7 +198,6 @@ function Signup({ onSubmit }) {
               </form>
             </div>
           </div>
-
         </div>
       </div>
     </div>

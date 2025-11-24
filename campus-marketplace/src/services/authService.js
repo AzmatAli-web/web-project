@@ -1,159 +1,68 @@
-import axiosClient from "../api/axiosClient";
+// authService.js
+import axios from 'axios';
 
-/**
- * Login user
- * @param {string} email
- * @param {string} password
- * @returns {Promise<{token, message}>}
- */
-export const login = async (email, password) => {
-  try {
-    const response = await axiosClient.post("/auth/login", { email, password });
-    if (response.data.token) {
-      localStorage.setItem("authToken", response.data.token);
+const API_URL = 'http://localhost:5000/api';
+
+export const authService = {
+  register: async (userData) => {
+    try {
+      console.log('Sending registration request...', userData);
+      
+      const response = await axios.post(`${API_URL}/auth/register`, userData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('Registration successful:', response.data);
+      
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error.response?.data?.message || error.message || 'Registration failed';
     }
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || { message: "Login failed" };
-  }
-};
+  },
 
-/**
- * Signup user
- * @param {string} fullName
- * @param {string} email
- * @param {string} studentId
- * @param {string} password
- * @returns {Promise<{message}>}
- */
-export const signup = async (fullName, email, studentId, password) => {
-  try {
-    const response = await axiosClient.post("/auth/signup", {
-      fullName,
-      email,
-      studentId,
-      password,
-    });
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || { message: "Signup failed" };
-  }
-};
-
-/**
- * Submit a new product listing with optional image
- * @param {string} title
- * @param {string} description
- * @param {number} price
- * @param {string} category
- * @param {File} image - optional image file
- * @returns {Promise<{message, productId}>}
- */
-export const submitProduct = async (title, description, price, category, image = null) => {
-  try {
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("price", price);
-    formData.append("category", category);
-    if (image) {
-      formData.append("image", image);
+  // ADD LOGIN FUNCTION - similar to register but for login endpoint
+  login: async (credentials) => {
+    try {
+      console.log('Sending login request...', credentials);
+      
+      const response = await axios.post(`${API_URL}/auth/login`, credentials, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('Login successful:', response.data);
+      
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error.response?.data?.message || error.message || 'Login failed';
     }
+  },
 
-    const response = await axiosClient.post("/products", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || { message: "Product submission failed" };
+  // Optional: Add other auth functions you might need
+  logout: () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  },
+
+  getCurrentUser: () => {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+  },
+
+  isAuthenticated: () => {
+    return !!localStorage.getItem('token');
   }
 };
-
-/**
- * Get all listings
- * @returns {Promise<Array>}
- */
-export const getListings = async () => {
-  try {
-    const response = await axiosClient.get("/listings");
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || { message: "Failed to fetch listings" };
-  }
-};
-
-/**
- * Approve a listing
- * @param {number} id - listing ID
- * @returns {Promise<{message}>}
- */
-export const approveListing = async (id) => {
-  try {
-    const response = await axiosClient.put(`/listings/${id}`, { status: "Approved" });
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || { message: "Failed to approve listing" };
-  }
-};
-
-/**
- * Remove/delete a listing
- * @param {number} id - listing ID
- * @returns {Promise<{message}>}
- */
-export const removeListing = async (id) => {
-  try {
-    const response = await axiosClient.delete(`/listings/${id}`);
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || { message: "Failed to remove listing" };
-  }
-};
-
-/**
- * Get single product by ID
- * @param {number} id
- * @returns {Promise<{id, title, description, price, category, image, seller}>}
- */
-export const getProductById = async (id) => {
-  try {
-    const response = await axiosClient.get(`/products/${id}`);
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || { message: "Failed to fetch product" };
-  }
-};
-
-/**
- * Get all products
- * @returns {Promise<Array>}
- */
-export const getAllProducts = async () => {
-  try {
-    const response = await axiosClient.get("/products");
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || { message: "Failed to fetch products" };
-  }
-};
-
-/**
- * Get all users (admin)
- * @returns {Promise<Array>}
- */
-export const getUsers = () => axiosClient.get("/users");
-
-/**
- * Delete a user (admin)
- * @param {number} id
- * @returns {Promise}
- */
-export const deleteUser = (id) => axiosClient.delete(`/users/${id}`);
-
-/**
- * Update a user (admin)
- * @param {number} id
- * @param {object} updateData
- * @returns {Promise}
- */
-export const updateUser = (id, updateData) => axiosClient.put(`/users/${id}`, updateData);

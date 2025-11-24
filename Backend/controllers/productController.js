@@ -1,104 +1,71 @@
-// Mock database for products
-let products = [
-  { 
-    id: 1, 
-    title: 'Used Laptop', 
-    description: 'Dell laptop in good condition', 
-    price: 15000, 
-    category: 'Electronics', 
-    seller: 'Sara Khan',
-    image: '/uploads/laptop.jpg'
-  },
-  { 
-    id: 2, 
-    title: 'iPhone 13', 
-    description: 'iPhone 13 128GB', 
-    price: 60000, 
-    category: 'Electronics', 
-    seller: 'Ali Raza',
-    image: '/uploads/iphone.jpg'
-  },
-];
+const Product = require('../models/product');
+const db = require('../config/database'); // Import once
 
-let nextProductId = 3;
-
-/**
- * GET all products
- */
-exports.getAllProducts = (req, res) => {
-  res.json(products);
+const getProducts = (req, res) => {
+  res.json(db.products);
 };
 
-/**
- * GET single product by ID
- */
-exports.getProductById = (req, res) => {
-  const product = products.find(p => p.id === parseInt(req.params.id));
+const getProductById = (req, res) => {
+  const product = db.products.find(p => p.id === parseInt(req.params.id));
+  
   if (!product) {
-    return res.status(404).json({ message: "Product not found" });
+    return res.status(404).json({ message: 'Product not found' });
   }
+  
   res.json(product);
 };
 
-/**
- * CREATE new product (with optional image upload)
- */
-exports.createProduct = (req, res) => {
-  const { title, description, price, category } = req.body;
+const createProduct = (req, res) => {
+  const { name, price, description } = req.body;
 
-  if (!title || !price) {
-    return res.status(400).json({ message: "Title and price are required" });
-  }
+  const product = new Product(name, price, description);
+  product.id = db.productIdCounter;
+  db.products.push(product);
+  db.productIdCounter++;
 
-  const newProduct = {
-    id: nextProductId++,
-    title,
-    description: description || '',
-    price: parseFloat(price),
-    category: category || 'Other',
-    seller: 'Current User', // Replace with authenticated user
-    image: req.file ? `/uploads/${req.file.filename}` : '/uploads/default.jpg',
-  };
-
-  products.push(newProduct);
-
-  // Return success message with minimal detail
-  res.status(201).json({ 
-    message: "Image received! Product created successfully.", 
-    productId: newProduct.id 
+  res.status(201).json({
+    message: 'Product created successfully',
+    product
   });
 };
 
-/**
- * UPDATE product
- */
-exports.updateProduct = (req, res) => {
-  const id = parseInt(req.params.id);
-  const product = products.find(p => p.id === id);
-
-  if (!product) {
-    return res.status(404).json({ message: "Product not found" });
+const updateProduct = (req, res) => {
+  const productIndex = db.products.findIndex(p => p.id === parseInt(req.params.id));
+  
+  if (productIndex === -1) {
+    return res.status(404).json({ message: 'Product not found' });
   }
 
-  if (req.body.title) product.title = req.body.title;
-  if (req.body.description) product.description = req.body.description;
-  if (req.body.price) product.price = req.body.price;
-  if (req.body.category) product.category = req.body.category;
+  const { name, price, description } = req.body;
+  
+  db.products[productIndex] = {
+    ...db.products[productIndex],
+    name: name || db.products[productIndex].name,
+    price: price || db.products[productIndex].price,
+    description: description || db.products[productIndex].description
+  };
 
-  res.json({ message: "Product updated", product });
+  res.json({
+    message: 'Product updated successfully',
+    product: db.products[productIndex]
+  });
 };
 
-/**
- * DELETE product
- */
-exports.deleteProduct = (req, res) => {
-  const id = parseInt(req.params.id);
-  const index = products.findIndex(p => p.id === id);
-
-  if (index === -1) {
-    return res.status(404).json({ message: "Product not found" });
+const deleteProduct = (req, res) => {
+  const productIndex = db.products.findIndex(p => p.id === parseInt(req.params.id));
+  
+  if (productIndex === -1) {
+    return res.status(404).json({ message: 'Product not found' });
   }
 
-  products.splice(index, 1);
-  res.json({ message: "Product deleted" });
+  db.products.splice(productIndex, 1);
+  res.json({ message: 'Product deleted successfully' });
+};
+
+module.exports = {
+  getProducts,
+  getProductById,
+  createProduct,
+  updateProduct,
+  deleteProduct
 };

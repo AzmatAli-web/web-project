@@ -1,20 +1,21 @@
-const express = require("express");
+const express = require('express');
+const {
+  getListings,
+  getListingById,
+  createListing,
+  getUserListings,
+  updateListing,
+  deleteListing
+} = require('../controllers/listingController');
+const auth = require('../middleware/auth');
+
 const router = express.Router();
-const listingController = require("../controllers/listingController");
 
-// GET all listings
-router.get("/", listingController.getListings);
-
-// GET listing by ID
-router.get("/:id", listingController.getListingById);
-
-// POST create new listing
-router.post("/", listingController.createListing);
-
-// PUT update listing (approve/change status)
-router.put("/:id", listingController.updateListing);
-
-// DELETE listing
-router.delete("/:id", listingController.deleteListing);
+router.get('/', getListings);
+router.get('/:id', getListingById);
+router.get('/user/:userId', getUserListings);
+router.post('/', auth, createListing);
+router.put('/:id', auth, updateListing);
+router.delete('/:id', auth, deleteListing);
 
 module.exports = router;
