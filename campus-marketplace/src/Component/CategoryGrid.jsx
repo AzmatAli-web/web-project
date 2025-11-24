@@ -5,10 +5,10 @@ function CategoryGrid() {
   const navigate = useNavigate();
 
   const categories = [
-    { id: 'books', name: 'Books', image: '/src/assets/images/books.jpeg' },
-    { id: 'gadgets', name: 'Gadgets', image: '/src/assets/images/laptop.jpeg' },
-    { id: 'stationery', name: 'Stationery', image: '/src/assets/images/stationary.jpeg' },
-    { id: 'accessories', name: 'Accessories', image: '/src/assets/images/books2.jpeg' }
+    { id: 'books', name: 'Books', image: 'images/books.jpeg' },
+    { id: 'gadgets', name: 'Gadgets', image: '/images/laptop.jpeg' },
+    { id: 'stationery', name: 'Stationery', image: '/images/stationary.jpeg' },
+    { id: 'accessories', name: 'Accessories', image: '/images/books2.jpeg' }
   ];
 
   const handleCategoryClick = (categoryId) => {

@@ -13,7 +13,7 @@ function CategoryPage() {
       name: "Used Calculus Book",
       price: 500,
       category: "books",
-      image: "/src/assets/images2/books.jpeg",
+      image: "/images2/books.jpeg",
       description: "Great condition calculus book for engineering students"
     },
     {
@@ -21,7 +21,7 @@ function CategoryPage() {
       name: "Software Engineering",
       price: 600,
       category: "books",
-      image: "/src/assets/images2/software.jpeg",
+      image: "/images2/software.jpeg",
       description: "Software engineering books second hand, lightly used"
     },
     {
@@ -29,7 +29,7 @@ function CategoryPage() {
       name: "dsa in phython Textbook",
       price: 400,
       category: "books",
-      image: "/src/assets/images2/dsainpython.jpg",
+      image: "/images2/dsainpython.jpg",
       description: " Data Structures and Algorithms in Python"
     },
     {
@@ -37,7 +37,7 @@ function CategoryPage() {
       name: "dsa in java Textbook",
       price: 350,
       category: "books",
-      image: "/src/assets/images2/dsainjava.jpg",
+      image: "/images2/dsainjava.jpg",
       description: " Data Structures and Algorithms in Java"
     },
     {
@@ -45,7 +45,7 @@ function CategoryPage() {
       name: "calculus Textbook",
       price: 4500,
       category: "books",
-      image: "/src/assets/images2/calc.jpg",
+      image: "/images2/calc.jpg",
       description: "calculus Textbook for beginners"
     },
     {
@@ -53,7 +53,7 @@ function CategoryPage() {
       name: "software handwrttin notes",
       price: 350,
       category: "books",
-      image: "/src/assets/images2/handwritten.jpg",
+      image: "/images2/handwritten.jpg",
       description: " full software engineering hand written notes"
     },
 
@@ -63,7 +63,7 @@ function CategoryPage() {
       name: "Second-hand Laptop",
       price: 30000,
       category: "gadgets",
-      image: "/src/assets/images2/dell.jpg",
+      image: "/images2/dell.jpg",
       description: "Dell laptop, 8GB RAM, 256GB SSD, good condition"
     },
     {
@@ -71,7 +71,7 @@ function CategoryPage() {
       name: "simple Calculator",
       price: 1500,
       category: "gadgets",
-      image: "/src/assets/images2/calc2.jpg",
+      image: "/images2/calc2.jpg",
       description: "simple calculator for engineering students"
     },
     {
@@ -79,7 +79,7 @@ function CategoryPage() {
       name: "Graphing Calculator",
       price: 1500,
       category: "gadgets",
-      image: "/src/assets/images2/cal1.jpg",
+      image: "/images2/cal1.jpg",
       description: "Scientific calculator for engineering students"
     },
     {
@@ -87,7 +87,7 @@ function CategoryPage() {
       name: "hp laptop",
       price: 80000,
       category: "gadgets",
-      image: "/src/assets/images2/hplap.jpg",
+      image: "/images2/hplap.jpg",
       description: " hp laptop, 16GB RAM, 512GB ssd, fair condition"
     },
     {
@@ -95,7 +95,7 @@ function CategoryPage() {
       name: "huawei laptop",
       price: 100000,
       category: "gadgets",
-      image: "/src/assets/images2/huawei.jpg",
+      image: "/images2/huawei.jpg",
       description: " huawei laptop, 16GB RAM, 512GB ssd, fair condition"
     },
 
@@ -105,7 +105,7 @@ function CategoryPage() {
       name: "complete set Box",
       price: 180,
       category: "stationery",
-      image: "/src/assets/images2/statcompbox.jpg",
+      image: "/images2/statcompbox.jpg",
       description: "Complete set with compass and ruler and pen etc"
     },
     {
@@ -113,7 +113,7 @@ function CategoryPage() {
       name: "Notebook Set",
       price: 200,
       category: "stationery",
-      image: "/src/assets/images2/stat1.jpg",
+      image: "/images2/stat1.jpg",
       description: "Set of 5 notebooks for different subjects"
     },
     {
@@ -121,7 +121,7 @@ function CategoryPage() {
       name: "Pen Collection",
       price: 150,
       category: "stationery",
-      image: "/src/assets/images2/stat2.jpg",
+      image: "/images2/stat2.jpg",
       description: "10 high-quality pens for smooth writing"
     },
 
@@ -131,7 +131,7 @@ function CategoryPage() {
       name: "file folder",
       price: 150,
       category: "accessories",
-      image: "/src/assets/images2/filefolder.jpg",
+      image: "/images2/filefolder.jpg",
       description: "file folder for keeping documents organized"
     },
     {
@@ -139,7 +139,7 @@ function CategoryPage() {
       name: "Book Cover",
       price: 80,
       category: "accessories",
-      image: "/src/assets/images2/bookcvr1.jpg",
+      image: "/images2/bookcvr1.jpg",
       description: "Protective cover for textbooks"
     },
     {
@@ -147,7 +147,7 @@ function CategoryPage() {
       name: "lunch box",
       price: 1200,
       category: "accessories",
-      image: "/src/assets/images2/lunchbox.jpg",
+      image: "/images2/lunchbox.jpg",
       description: "Waterproof backpack for college students"
     },
     {
@@ -155,7 +155,7 @@ function CategoryPage() {
       name: "watter bottle",
       price: 1200,
       category: "accessories",
-      image: "/src/assets/images2/watterbottle.jpg",
+      image: "/images2/watterbottle.jpg",
       description: " watter bottle for daily use"
     },
     {
@@ -163,7 +163,7 @@ function CategoryPage() {
       name: "umbrella",
       price: 1200,
       category: "accessories",
-      image: "/src/assets/images2/umbrella.jpg",
+      image: "/images2/umbrella.jpg",
       description: "umbrella for rainy season"
     }
   ];

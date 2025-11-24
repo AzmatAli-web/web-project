@@ -3,10 +3,10 @@
 import ProductCard from './ProductCard';
 
 const sampleProducts = [
-  { id: 1, image: '/src/assets/images/books2.jpeg', title: 'Used Calculus Book', price: 500 },
-  { id: 2, image: '/src/assets/images/laptop.jpeg', title: 'Second-hand Laptop', price: 30000 },
-  { id: 3, image: '/src/assets/images/calculater.jpeg', title: 'Graphing Calculator', price: 1500 },
-  { id: 4, image: '/src/assets/images/books.jpeg', title: 'Lecture Notes Bundle', price: 500 },
+  { id: 1, image: '/images/books2.jpeg', title: 'Used Calculus Book', price: 500 },
+  { id: 4, image: '/images/books.jpeg', title: 'Lecture Notes Bundle', price: 500 },
+  { id: 3, image: '/images/calculater.jpeg', title: 'Graphing Calculator', price: 1500 },
+  { id: 2, image: '/images/laptop.jpeg', title: 'Second-hand Laptop', price: 30000 },
 ];
 
 function LatestListings() {

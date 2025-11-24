@@ -8,7 +8,7 @@ function HeroSection() {
           borderRadius: 50, 
           overflow: 'hidden', 
           minHeight: 600,
-          backgroundImage: "url('/src/assets/images/backgroundimg.png')", 
+          backgroundImage: "url('/images/backgroundimg.png')", 
           backgroundSize: 'cover', 
           backgroundPosition: 'center'
         }}>
