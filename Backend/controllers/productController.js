@@ -27,10 +27,26 @@ const getProductById = async (req, res) => {
   }
 };
 
-// Create new product
+// Create new product - UPDATED WITH DEBUG LOGGING
 const createProduct = async (req, res) => {
   try {
+    console.log('🟡 CREATE PRODUCT - Request received');
+    console.log('🟡 Request body:', req.body);
+    console.log('🟡 User ID from auth:', req.user?.id);
+
     const { name, price, description, category, image } = req.body;
+
+    // Validate required fields
+    if (!name || !price || !description || !category) {
+      console.log('❌ Missing required fields');
+      return res.status(400).json({ 
+        message: 'Missing required fields: name, price, description, category' 
+      });
+    }
+
+    console.log('🟡 Creating product with data:', {
+      name, price, description, category, image
+    });
 
     const product = new Product({
       name,
@@ -41,18 +57,27 @@ const createProduct = async (req, res) => {
       seller: req.user.id // From auth middleware
     });
 
+    console.log('🟡 Product object created, saving to database...');
+
     await product.save();
+    console.log('✅ Product saved to database successfully');
     
     // Populate seller info in response
     await product.populate('seller', 'name email');
+    console.log('✅ Product populated with seller info');
 
     res.status(201).json({
       message: 'Product created successfully',
       product
     });
+
   } catch (error) {
-    console.error('Error creating product:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('❌ ERROR creating product:', error);
+    console.error('❌ Error details:', error.message);
+    console.error('❌ Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Server error creating product: ' + error.message 
+    });
   }
 };
 
