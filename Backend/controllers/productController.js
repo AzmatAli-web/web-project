@@ -39,22 +39,9 @@ const getProductsByCategory = async (req, res) => {
   }
 };
 
-// Create new product
+// Create new product - UPDATED FOR MEMORY STORAGE
 const createProduct = async (req, res) => {
   try {
-    console.log('=== DEBUG CREATE PRODUCT ===');
-    console.log('req.body:', req.body);
-    console.log('req.body type:', typeof req.body);
-    console.log('req.body keys:', Object.keys(req.body || {}));
-    console.log('req.file:', req.file);
-    console.log('req.headers:', req.headers);
-    console.log('=== END DEBUG ===');
-
-    if (!req.body || Object.keys(req.body).length === 0) {
-      console.log('❌ Request body is empty after multer processing.');
-      return res.status(400).json({ message: 'Request body is empty. Ensure form data is sent correctly.' });
-    }
-
     // SAFE FIELD ACCESS
     const name = req.body?.name;
     const price = req.body?.price;
@@ -63,41 +50,42 @@ const createProduct = async (req, res) => {
     const contact = req.body?.contact;
     const location = req.body?.location;
 
-    console.log('Extracted fields:', { name, price, category, description, contact, location });
+    console.log('Extracted fields:', { name, price, category });
 
-    // Validate only essential fields
-    if (!name || !price || !category) {
-      console.log('❌ Missing required fields');
-      return res.status(400).json({ 
-        message: 'Missing required fields: name, price, category',
-        received: { name, price, category }
-      });
+    // Handle memory storage - use placeholder for Railway
+    let imageUrl = 'https://via.placeholder.com/300x200?text=Product+Image';
+    if (req.file) {
+      console.log('🟡 Image received in memory, using placeholder');
+      // File is available in req.file.buffer but we'll use placeholder for now
     }
 
-    // IMAGE HANDLING
-    const image = req.file ? `/uploads/${req.file.filename}` : null;
-    console.log('Image path:', image);
+    // Validate required fields
+    if (!name || !price || !category) {
+      return res.status(400).json({ message: 'Missing required fields: name, price, category' });
+    }
 
     const product = new Product({
-      name: name.toString().trim(),
+      name,
       price: Number(price),
-      description: description?.toString().trim() || '',
-      category: category.toString().trim(),
-      image,
-      contact: contact?.toString().trim() || '',
-      location: location?.toString().trim() || '',
+      description: description || '',
+      category,
+      image: imageUrl, // Use placeholder image
+      contact: contact || '',
+      location: location || '',
       seller: req.user?.id || null
     });
 
     await product.save();
     await product.populate('seller', 'name email');
 
-    console.log('✅ Product created successfully');
-    res.status(201).json({ message: 'Product created successfully', product });
+    res.status(201).json({ 
+      message: 'Product created successfully', 
+      product 
+    });
+
   } catch (error) {
-    console.error('❌ Product creation error:', error);
-    console.error('❌ Error stack:', error.stack);
-    res.status(500).json({ message: 'Server error creating product', error: error.message });
+    console.error('Error creating product:', error);
+    res.status(500).json({ message: 'Server error creating product' });
   }
 };
 
