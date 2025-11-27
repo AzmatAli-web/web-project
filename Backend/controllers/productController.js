@@ -167,14 +167,8 @@ const updateProduct = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    console.log('🔍 Debug Ownership Check (Update Product):');
-    console.log('  Product ID:', req.params.id);
-    console.log('  Product seller field (from DB):', product.seller);
-    console.log('  JWT user ID (req.user.id):', req.user.id);
-    console.log('  Comparison: product.seller.toString() === req.user.id ->', product.seller?.toString() === req.user.id);
-
-    // Check if user owns the product. Add a check for null seller.
-    if (!product.seller || product.seller.toString() !== req.user.id) {
+    // Check if user owns the product using the robust .equals() method for ObjectIds.
+    if (!product.seller || !product.seller.equals(req.user.id)) {
       return res.status(403).json({ message: 'Not authorized to update this product' });
     }
 
@@ -226,13 +220,8 @@ const deleteProduct = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    console.log('🔍 Debug Ownership Check (Delete Product):');
-    console.log('  Product ID:', req.params.id);
-    console.log('  Product seller field (from DB):', product.seller);
-    console.log('  JWT user ID (req.user.id):', req.user.id);
-    console.log('  Comparison: product.seller.toString() === req.user.id ->', product.seller?.toString() === req.user.id);
-    // Check if user owns the product. Add a check for null seller.
-    if (!product.seller || product.seller.toString() !== req.user.id) {
+    // Check if user owns the product using the robust .equals() method for ObjectIds.
+    if (!product.seller || !product.seller.equals(req.user.id)) {
       return res.status(403).json({ message: 'Not authorized to delete this product' });
     }
 
