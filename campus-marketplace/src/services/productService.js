@@ -123,6 +123,17 @@ const productService = {
     }
   },
 
+  // Get products for the currently authenticated user (My Products page)
+  getMyProducts: async () => {
+    try {
+      // This endpoint uses the auth token to identify the user on the backend.
+      const response = await api.get('/users/my-products');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to fetch your products';
+    }
+  },
+
   // Get user's products
   getUserProducts: async (userId) => {
     try {
@@ -134,4 +145,14 @@ const productService = {
   }
 };
 
-export default productService;
+export default {
+  ...productService,
+  getAllProducts: productService.getAllProducts,
+  getProductById: productService.getProductById,
+  getProductsByCategory: productService.getProductsByCategory,
+  createProduct: productService.createProduct,
+  updateProduct: productService.updateProduct,
+  deleteProduct: productService.deleteProduct,
+  getMyProducts: productService.getMyProducts,
+  getUserProducts: productService.getUserProducts,
+};

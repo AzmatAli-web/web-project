@@ -9,13 +9,10 @@ function UserProducts({ userId }) {
 
   useEffect(() => {
     // Only fetch products if we have a userId
-    if (userId) {
-      fetchUserProducts();
-    } else {
-      // If no userId is present after a moment, stop loading and show a message.
-      setLoading(false);
-    }
-  }, [userId]); // Keep userId as dependency to trigger fetch when user is loaded
+    // The backend uses the auth token to identify the user, so we don't need to wait for the userId prop.
+    // We can fetch the products as soon as the component mounts.
+    fetchUserProducts();
+  }, []); // Run this effect once when the component mounts
 
   const fetchUserProducts = async () => {
     try {
@@ -34,15 +31,16 @@ function UserProducts({ userId }) {
   };
 
   const handleDelete = async (productId) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
+    // Show a confirmation dialog before proceeding
+    if (window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
       try {
         await productService.deleteProduct(productId);
-        // Refresh the product list after deletion
+        // On success, filter out the deleted product from the local state to update the UI instantly
         setProducts(products.filter(p => p._id !== productId));
         alert('Product deleted successfully!');
       } catch (err) {
         console.error('Failed to delete product:', err);
-        alert(err.message || 'Failed to delete product.');
+        alert(err.message || 'Failed to delete product. Please try again.');
       }
     }
   };
@@ -119,7 +117,7 @@ function UserProducts({ userId }) {
                       </Link>
                       <button 
                         className="btn btn-outline-danger btn-sm flex-fill"
-                        onClick={() => handleDelete(product._id)}
+                        onClick={() => handleDelete(product._id)} // Connect the delete handler
                       >
                         Delete
                       </button>

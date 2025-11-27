@@ -325,7 +325,7 @@ function SellPage() {
                     name="image"
                     accept="image/png, image/jpeg, image/jpg, image/webp"
                     onChange={handleImageChange}
-                    required={!isEditMode || (!currentImageUrl && !imagePreview)} // Required for new products or if no image exists in edit mode
+                    required={!isEditMode} // Image is only strictly required for new products
                   />
                   
                   {(imagePreview || currentImageUrl) && (
