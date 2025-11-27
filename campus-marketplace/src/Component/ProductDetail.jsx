@@ -54,7 +54,7 @@ function ProductDetail() {
       return `${baseUrl}${prod.image}`;
     }
     // Fallback
-    return '/images/default-product.jpg';
+    return '/images/backgroundimg.png';
   };
 
   if (loading) { /* ... */ }
