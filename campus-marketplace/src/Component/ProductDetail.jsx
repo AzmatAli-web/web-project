@@ -41,9 +41,14 @@ function ProductDetail() {
   };
   
   const getImageUrl = (prod) => { // Renamed 'image' to 'prod' for clarity and consistency
+    // Add defensive null check for prod
+    if (!prod) {
+      return '/images/default-product.jpg'; // Use a consistent default fallback
+    }
+
     // If prod has an image stored in the database, use the image route
     if (prod.hasImage) {
-      return `/api/products/${prod._id}/image`;
+      return `/api/products/${String(prod._id)}/image`;
     }
     // If prod has image URL (placeholder), use it
     if (prod.image && typeof prod.image === 'string') {
@@ -54,7 +59,7 @@ function ProductDetail() {
       return `${baseUrl}${prod.image}`;
     }
     // Fallback
-    return '/images/backgroundimg.png';
+    return '/images/default-product.jpg'; // Use a consistent default fallback
   };
 
   if (loading) { /* ... */ }
@@ -80,18 +85,23 @@ function ProductDetail() {
             <div className="col-md-6">
               <img 
                 src={imageUrl} 
-                alt={product.name}
+                alt={product?.name} // Use optional chaining
                 className="img-fluid rounded-start h-100"
                 style={{ objectFit: 'cover', minHeight: '500px' }}
                 loading="lazy"
-                onError={(e) => { e.target.onerror = null; e.target.src='/images/default-product.jpg'; }}
+                onError={(e) => { 
+                  if (e.target.src !== '/images/default-product.jpg') { // Prevent endless loop if default also fails
+                    e.target.onerror = null; // Prevent infinite loop
+                    e.target.src='/images/default-product.jpg'; 
+                  }
+                }}
               />
             </div>
             
             <div className="col-md-6">
               <div className="card-body p-4">
-                <h1 className="h2 fw-bold text-dark mb-3">{product.name}</h1>
-                <p className="h3 text-primary mb-4">Rs. {product.price}</p>
+                <h1 className="h2 fw-bold text-dark mb-3">{product?.name}</h1> {/* Use optional chaining */}
+                <p className="h3 text-primary mb-4">Rs. {product?.price}</p> {/* Use optional chaining */}
                 
                 <div className="mb-4">
                   <AddToCartButton 
@@ -106,23 +116,23 @@ function ProductDetail() {
                   <div className="row">
                     <div className="col-6 mb-2">
                       <strong>Category:</strong> 
-                      <span className="text-capitalize"> {product.category}</span>
+                      <span className="text-capitalize"> {product?.category}</span> {/* Use optional chaining */}
                     </div>
                     <div className="col-6 mb-2">
-                      <strong>Seller:</strong> {product.seller?.name || 'N/A'}
+                      <strong>Seller:</strong> {product?.seller?.name || 'N/A'} {/* Already has optional chaining for seller */}
                     </div>
                     <div className="col-6 mb-2">
-                      <strong>Contact:</strong> {product.contact || 'N/A'}
+                      <strong>Contact:</strong> {product?.contact || 'N/A'} {/* Use optional chaining */}
                     </div>
                     <div className="col-6 mb-2">
-                      <strong>Location:</strong> {product.location || 'N/A'}
+                      <strong>Location:</strong> {product?.location || 'N/A'} {/* Use optional chaining */}
                     </div>
                   </div>
                 </div>
 
                 <div className="mb-4">
                   <h5 className="fw-bold mb-3">Description</h5>
-                  <p className="text-muted">{product.description}</p>
+                  <p className="text-muted">{product?.description}</p> {/* Use optional chaining */}
                 </div>
 
                 <div className="d-grid gap-2">

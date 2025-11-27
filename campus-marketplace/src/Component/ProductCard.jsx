@@ -22,7 +22,7 @@ const ProductCard = React.memo(({ product }) => {
   const getImageUrl = (prod) => {
     // If prod has an image stored in the database, use the image route
     if (prod.hasImage) {
-      return `/api/products/${prod._id}/image`;
+      return `/api/products/${String(prod._id)}/image`;
     }
     // If prod has image URL (placeholder), use it
     if (prod.image && typeof prod.image === 'string') {
@@ -45,7 +45,13 @@ const ProductCard = React.memo(({ product }) => {
         alt={product.name} 
         className="card-img-top" 
         style={{ height: '180px', objectFit: 'cover' }} 
-        onError={(e) => { e.target.onerror = null; e.target.src='/images/default-product.jpg'; }}
+        loading="lazy" // Add lazy loading
+        onError={(e) => { 
+          if (e.target.src !== '/images/default-product.jpg') { // Prevent endless loop if default also fails
+            e.target.onerror = null; // Prevent infinite loop
+            e.target.src='/images/default-product.jpg'; 
+          }
+        }}
       />
       <div className="card-body d-flex flex-column">
         <h5 className="card-title" style={{ minHeight: '48px' }}>{product.name}</h5>

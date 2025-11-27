@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import ProductCard from './ProductCard';
 import productService from '../services/productService';
 
-function LatestListings() {
+const LatestListings = memo(() => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -47,6 +47,6 @@ function LatestListings() {
       </div>
     </section>
   );
-}
+});
 
 export default LatestListings;

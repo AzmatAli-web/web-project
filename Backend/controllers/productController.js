@@ -193,6 +193,7 @@ const getProductImage = async (req, res) => {
     }
 
     res.set('Content-Type', product.image.contentType);
+    res.set('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
     res.send(product.image.data);
   } catch (error) {
     console.error('Error serving product image:', error);
