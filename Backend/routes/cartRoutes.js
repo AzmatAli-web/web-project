@@ -1,20 +1,18 @@
 const express = require('express');
-const {
-  getCart,
-  addToCart,
-  updateCartItem,
-  removeFromCart,
-  clearCart
-} = require('../controllers/cartController');
+const router = express.Router();
+const { addToCart, getCart, removeFromCart, clearCart } = require('../controllers/cartController');
 const auth = require('../middleware/auth');
 
-const router = express.Router();
-
-// All routes require authentication
-router.get('/', auth, getCart);
+// POST /api/cart/add - Add item to cart (requires auth)
 router.post('/add', auth, addToCart);
-router.put('/update', auth, updateCartItem);
-router.delete('/remove/:productId', auth, removeFromCart);
-router.delete('/clear', auth, clearCart);
+
+// GET /api/cart - Get user's cart (requires auth) 
+router.get('/', auth, getCart);
+
+// DELETE /api/cart/:itemId - Remove item from cart (requires auth)
+router.delete('/:itemId', auth, removeFromCart);
+
+// DELETE /api/cart - Clear entire cart (requires auth)
+router.delete('/', auth, clearCart);
 
 module.exports = router;

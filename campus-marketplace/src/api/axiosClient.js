@@ -34,4 +34,4 @@ if (token) {
   axiosClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 }
 
-export default axiosClient;
+export default axiosClient; 

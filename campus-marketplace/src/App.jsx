@@ -9,6 +9,8 @@ import SellPage from './Component/SellPage';
 import Admin from './Admin';
 import Profile from './Pages/Profile';
 import Cart from './Pages/Cart';
+
+// import AdminLogin from './Pages/AdminLogin'; // ✅ ADD THIS IMPORT
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -25,6 +27,10 @@ function App() {
       path: "/signup",
       element: <Signup/>
     },
+  //   {
+  // path: "/admin-login",
+  // element: <AdminLogin />
+  //   },
     {
       path: "/sell",
       element: <SellPage/>

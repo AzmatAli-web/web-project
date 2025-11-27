@@ -13,7 +13,6 @@ const productSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: [true, 'Description is required'],
     trim: true
   },
   category: {
@@ -25,15 +24,18 @@ const productSchema = new mongoose.Schema({
     type: String,
     default: '/images/default-product.jpg'
   },
+  contact: {
+    type: String,
+    trim: true,
+  },
+  location: {
+    type: String,
+    trim: true,
+  },
   seller: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
-  },
-  status: {
-    type: String,
-    enum: ['available', 'sold', 'pending'],
-    default: 'available'
+    // optional: reference to the seller user
   },
   createdAt: {
     type: Date,

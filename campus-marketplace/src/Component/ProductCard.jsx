@@ -8,27 +8,40 @@ function ProductCard({ product }) {
 
   // Handle view details
   const handleViewDetails = () => {
-    if (product && product.id) {
-      navigate(`/product/${product.id}`);
+    if (product && product._id) {
+      navigate(`/product/${product._id}`);
     }
   };
 
-  // Create product object for AddToCartButton
   const productForCart = {
-    _id: product.id.toString(),
+    _id: product._id,
     name: product.name,
     price: product.price,
     image: product.image,
-    status: 'available'
+    status: product.status || 'available'
   };
+
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) {
+      return '/images/default-product.jpg'; // Fallback image
+    }
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
+    return `${baseUrl}${imagePath}`;
+  };
+  
+  const imageUrl = getImageUrl(product.image);
 
   return (
     <article className="card h-100 shadow-sm">
       <img 
-        src={product.image} 
+        src={imageUrl} 
         alt={product.name} 
         className="card-img-top" 
         style={{ height: '180px', objectFit: 'cover' }} 
+        onError={(e) => { e.target.onerror = null; e.target.src='/images/default-product.jpg'; }}
       />
       <div className="card-body d-flex flex-column">
         <h5 className="card-title" style={{ minHeight: '48px' }}>{product.name}</h5>

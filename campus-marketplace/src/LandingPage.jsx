@@ -6,12 +6,23 @@ import CallToAction from "./Component/CallToAction.jsx";
 import Footer from "./Component/Footer.jsx";
 
 function LandingPage() {
+  const bgStyle = {
+    minWidth: '800px',
+    minHeight: '100vh',
+    backgroundImage: `url('/images/backgroundimg.png')`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  };
+
   return (
-    <div className="container-fluid " style ={{minWidth:'800px'}}>
-    
+    <div className="container-fluid " >
+
       <NavigationBar />
       <main>
+        <div className="container-fluid" style={{bgStyle}}>
         <HeroSection />
+        </div>
         <CategoryGrid />
         <LatestListings />
         <CallToAction />

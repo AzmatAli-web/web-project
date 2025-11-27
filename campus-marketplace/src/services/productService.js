@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://accurate-compassion-production.up.railway.app/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -36,13 +36,47 @@ const productService = {
     }
   },
 
-  // Create new product
-  createProduct: async (productData) => {
+  // Get products by category
+  getProductsByCategory: async (categoryName) => {
     try {
-      const response = await api.post('/products', productData);
+      const response = await api.get(`/products/category/${categoryName}`);
       return response.data;
     } catch (error) {
-      throw error.response?.data?.message || 'Failed to create product';
+      throw error.response?.data?.message || 'Failed to fetch products by category';
+    }
+  },
+
+  // Create new product - FIXED FOR FORMDATA
+  createProduct: async (productData) => {
+    try {
+      console.log('🟡 productService - Sending FormData...');
+      
+      const token = localStorage.getItem('token');
+      
+      // Use fetch instead of axios for FormData to avoid Content-Type issues
+      const response = await fetch(`${API_URL}/products`, {
+        method: 'POST',
+        body: productData, // Pass FormData directly
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          // Let browser set Content-Type automatically for FormData
+        }
+      });
+
+      console.log('🟡 Response status:', response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('✅ productService - Success:', result);
+      return result;
+      
+    } catch (error) {
+      console.error('❌ productService error:', error);
+      throw error.message || 'Failed to create product';
     }
   },
 

@@ -1,5 +1,15 @@
 import { Link } from 'react-router-dom';
-import CartIcon from './Cart/CartIcon'; // ✅ ADD THIS IMPORT
+import CartIcon from './Cart/CartIcon';
+
+// Read current user from localStorage to show admin link when appropriate
+const getCurrentUser = () => {
+  try {
+    const raw = localStorage.getItem('user');
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+};
 
 function NavigationBar() {
   return (
@@ -18,7 +28,6 @@ function NavigationBar() {
             <span className="fw-bold mb-0">CampusMarketplace</span>
           </Link>
           
-          {/* ✅ FIXED: Mobile toggle button */}
           <button
             className="navbar-toggler"
             type="button"
@@ -48,24 +57,27 @@ function NavigationBar() {
             </ul>
             
             <div className="d-flex align-items-center ms-lg-3">
-              {/* ✅ ADDED: Cart Icon */}
               <div className="me-2">
                 <CartIcon />
               </div>
               
-              {/* Sell Button */}
               <Link to="/sell" className="btn btn-success me-2">
                 ➕ Sell Item
               </Link>
               
-              {/* Auth Buttons */}
+              {/* Show Admin link when user.role === 'admin' */}
+              {(() => {
+                const user = getCurrentUser();
+                if (user && user.role === 'admin') {
+                  return (
+                    <Link to="/Admin" className="btn btn-warning me-2">Admin</Link>
+                  );
+                }
+                return null;
+              })()}
+
               <Link to="/Login" className="btn btn-primary me-2 text-decoration-none">Login</Link>
               <Link to="/signup" className="btn btn-primary me-2">Sign up</Link>
-              
-              {/* Profile Link (optional - you can add later) */}
-              {/* <Link to="/profile" className="btn btn-outline-primary me-2">Profile</Link> */}
-              
-              <Link to="/Admin" className="btn ms-2 btn-danger">Admin</Link>
             </div>
           </div>
         </div>

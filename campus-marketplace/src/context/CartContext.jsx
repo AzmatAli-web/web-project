@@ -7,7 +7,6 @@ const CartContext = createContext();
 const CART_ACTIONS = {
   SET_CART: 'SET_CART',
   ADD_ITEM: 'ADD_ITEM',
-  UPDATE_QUANTITY: 'UPDATE_QUANTITY',
   REMOVE_ITEM: 'REMOVE_ITEM',
   CLEAR_CART: 'CLEAR_CART',
   SET_LOADING: 'SET_LOADING',
@@ -95,16 +94,6 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const updateQuantity = async (productId, quantity) => {
-    try {
-      await cartService.updateCartItem(productId, quantity);
-      await fetchCart();
-    } catch (error) {
-      dispatch({ type: CART_ACTIONS.SET_ERROR, payload: error.message });
-      throw error;
-    }
-  };
-
   const removeFromCart = async (productId) => {
     try {
       await cartService.removeFromCart(productId);
@@ -130,7 +119,16 @@ export const CartProvider = ({ children }) => {
   };
 
   const getCartTotal = () => {
-    return state.cart.totalAmount;
+    if (!state.cart || !state.cart.items) {
+      return 0;
+    }
+    return state.cart.items.reduce((total, item) => {
+      // Ensure product and price exist to prevent errors
+      if (item.product && typeof item.product.price === 'number') {
+        return total + (item.product.price * item.quantity);
+      }
+      return total;
+    }, 0);
   };
 
   const value = {
@@ -138,7 +136,6 @@ export const CartProvider = ({ children }) => {
     loading: state.loading,
     error: state.error,
     addToCart,
-    updateQuantity,
     removeFromCart,
     clearCart,
     fetchCart,

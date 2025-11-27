@@ -3,33 +3,84 @@ const express = require('express');
 const router = express.Router();
 const { register, login, verify } = require('../controllers/authController');
 const auth = require('../middleware/auth');
-const User = require('../models/user'); // ✅ ADD THIS
+const User = require('../models/user');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-// PUBLIC routes - NO auth middleware
+// PUBLIC routes
 router.post('/register', register);
-router.post('/login', login);
 
-// ✅ TEMPORARY: Create admin route (remove after use)
-router.post('/make-admin', async (req, res) => {
+// UPDATED LOGIN ROUTE
+router.post('/login', async (req, res) => {
   try {
-    const { email } = req.body;
-    
-    const user = await User.findOneAndUpdate(
-      { email: email },
-      { 
-        role: 'admin', 
-        status: 'approved' 
-      },
-      { new: true }
-    );
-    
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    const { email, password } = req.body;
+    console.log('Login data submitted:', { email, password });
+
+    // Admin shortcut: accept admin@campus.com with password 'admin123'
+    if (email === 'admin@campus.com' && password === 'admin123') {
+      let user = await User.findOne({ email });
+
+      // Create admin user if it doesn't exist
+      if (!user) {
+        const hashedPassword = await bcrypt.hash('admin123', 10);
+        user = new User({
+          name: 'Admin',
+          email: 'admin@campus.com',
+          password: hashedPassword,
+          role: 'admin',
+          status: 'approved'
+        });
+        await user.save();
+      } else {
+        // Ensure role/status are admin
+        if (user.role !== 'admin' || user.status !== 'approved') {
+          await User.updateOne({ email }, { role: 'admin', status: 'approved' });
+          user.role = 'admin';
+          user.status = 'approved';
+        }
+      }
+
+      const token = jwt.sign(
+        { id: user._id, email: user.email, role: 'admin' },
+        process.env.JWT_SECRET || 'fallback_secret',
+        { expiresIn: '24h' }
+      );
+
+      return res.json({
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: 'admin',
+          status: user.status
+        }
+      });
     }
-    
-    console.log('✅ User promoted to admin:', user.email);
-    res.json({ 
-      message: 'User promoted to admin successfully',
+
+    // Regular login flow
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign(
+      { 
+        id: user._id,
+        email: user.email, 
+        role: user.role 
+      },
+      process.env.JWT_SECRET || 'fallback_secret',
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      token,
       user: {
         id: user._id,
         name: user.name,
@@ -39,12 +90,17 @@ router.post('/make-admin', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error creating admin:', error);
-    res.status(500).json({ message: 'Error creating admin' });
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Server error during login' });
   }
 });
 
-// PROTECTED routes - WITH auth middleware  
+// DEBUG route
+router.get('/debug-role', auth, (req, res) => {
+  res.json({ user: req.user });
+});
+
+// PROTECTED routes  
 router.get('/verify', auth, verify);
 
 module.exports = router;

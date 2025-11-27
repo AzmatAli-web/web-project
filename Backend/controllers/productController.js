@@ -3,7 +3,7 @@ const Product = require('../models/product');
 // Get all products
 const getProducts = async (req, res) => {
   try {
-    const products = await Product.find().populate('seller', 'name email');
+    const products = await Product.find().sort({ createdAt: -1 }).populate('seller', 'name email');
     res.json(products);
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -27,57 +27,77 @@ const getProductById = async (req, res) => {
   }
 };
 
-// Create new product - UPDATED WITH DEBUG LOGGING
+// Get products by category
+const getProductsByCategory = async (req, res) => {
+  try {
+    const { categoryName } = req.params;
+    const products = await Product.find({ category: { $regex: new RegExp(`^${categoryName}$`, 'i') } }).populate('seller', 'name email');
+    res.json(products);
+  } catch (error) {
+    console.error('Error fetching products by category:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Create new product
 const createProduct = async (req, res) => {
   try {
-    console.log('🟡 CREATE PRODUCT - Request received');
-    console.log('🟡 Request body:', req.body);
-    console.log('🟡 User ID from auth:', req.user?.id);
+    console.log('=== DEBUG CREATE PRODUCT ===');
+    console.log('req.body:', req.body);
+    console.log('req.body type:', typeof req.body);
+    console.log('req.body keys:', Object.keys(req.body || {}));
+    console.log('req.file:', req.file);
+    console.log('req.headers:', req.headers);
+    console.log('=== END DEBUG ===');
 
-    const { name, price, description, category, image } = req.body;
+    if (!req.body || Object.keys(req.body).length === 0) {
+      console.log('❌ Request body is empty after multer processing.');
+      return res.status(400).json({ message: 'Request body is empty. Ensure form data is sent correctly.' });
+    }
 
-    // Validate required fields
-    if (!name || !price || !description || !category) {
+    // SAFE FIELD ACCESS
+    const name = req.body?.name;
+    const price = req.body?.price;
+    const description = req.body?.description;
+    const category = req.body?.category;
+    const contact = req.body?.contact;
+    const location = req.body?.location;
+
+    console.log('Extracted fields:', { name, price, category, description, contact, location });
+
+    // Validate only essential fields
+    if (!name || !price || !category) {
       console.log('❌ Missing required fields');
       return res.status(400).json({ 
-        message: 'Missing required fields: name, price, description, category' 
+        message: 'Missing required fields: name, price, category',
+        received: { name, price, category }
       });
     }
 
-    console.log('🟡 Creating product with data:', {
-      name, price, description, category, image
-    });
+    // IMAGE HANDLING
+    const image = req.file ? `/uploads/${req.file.filename}` : null;
+    console.log('Image path:', image);
 
     const product = new Product({
-      name,
-      price,
-      description,
-      category,
-      image: image || '/images/default-product.jpg',
-      seller: req.user.id // From auth middleware
+      name: name.toString().trim(),
+      price: Number(price),
+      description: description?.toString().trim() || '',
+      category: category.toString().trim(),
+      image,
+      contact: contact?.toString().trim() || '',
+      location: location?.toString().trim() || '',
+      seller: req.user?.id || null
     });
-
-    console.log('🟡 Product object created, saving to database...');
 
     await product.save();
-    console.log('✅ Product saved to database successfully');
-    
-    // Populate seller info in response
     await product.populate('seller', 'name email');
-    console.log('✅ Product populated with seller info');
 
-    res.status(201).json({
-      message: 'Product created successfully',
-      product
-    });
-
+    console.log('✅ Product created successfully');
+    res.status(201).json({ message: 'Product created successfully', product });
   } catch (error) {
-    console.error('❌ ERROR creating product:', error);
-    console.error('❌ Error details:', error.message);
+    console.error('❌ Product creation error:', error);
     console.error('❌ Error stack:', error.stack);
-    res.status(500).json({ 
-      message: 'Server error creating product: ' + error.message 
-    });
+    res.status(500).json({ message: 'Server error creating product', error: error.message });
   }
 };
 
@@ -146,5 +166,6 @@ module.exports = {
   getProductById,
   createProduct,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  getProductsByCategory
 };
