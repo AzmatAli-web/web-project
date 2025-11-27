@@ -110,7 +110,7 @@ const createProduct = async (req, res) => {
 
     // Don't send image data in response to avoid large payloads
     const responseProduct = product.toObject();
-    delete responseProduct.image;
+  delete responseProduct.image;
 
     res.status(201).json({ 
       message: 'Product created successfully', 
@@ -126,7 +126,7 @@ const createProduct = async (req, res) => {
 // Update product
 const updateProduct = async (req, res) => {
   try {
-    const { name, price, description, category, image, status } = req.body;
+    const { name, price, description, category, contact, location, status } = req.body;
     
     const product = await Product.findById(req.params.id);
     
@@ -139,20 +139,38 @@ const updateProduct = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to update this product' });
     }
 
+    // Handle image storage in database if a new file is uploaded
+    if (req.file && req.file.buffer) {
+      product.image = {
+        data: req.file.buffer,
+        contentType: req.file.mimetype
+      };
+      console.log('✅ New image uploaded and stored in database - Size:', req.file.buffer.length, 'bytes');
+    } else if (req.body.removeImage === 'true') { // Assuming frontend sends removeImage: true to clear image
+      product.image = null;
+      console.log('🗑️ Product image removed.');
+    }
+
+
     // Update fields
     product.name = name || product.name;
     product.price = price || product.price;
     product.description = description || product.description;
     product.category = category || product.category;
-    product.image = image || product.image;
+    product.contact = contact || product.contact;
+    product.location = location || product.location;
     product.status = status || product.status;
 
     await product.save();
     await product.populate('seller', 'name email');
 
+    // Don't send image data in response to avoid large payloads
+    const responseProduct = product.toObject();
+    delete responseProduct.image;
+
     res.json({
       message: 'Product updated successfully',
-      product
+      product: responseProduct
     });
   } catch (error) {
     console.error('Error updating product:', error);

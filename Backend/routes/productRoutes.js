@@ -4,10 +4,13 @@ const {
   getProductById,
   createProduct,
   getProductsByCategory,
-  getProductImage // Import the new function
+  getProductImage, // Import the new function
+  updateProduct,
+  deleteProduct
 } = require('../controllers/productController');
 const upload = require('../utils/multerConfig');
-
+const auth = require('../middleware/auth');
+ 
 const router = express.Router();
 
 // Debug middleware
@@ -17,12 +20,12 @@ router.use((req, res, next) => {
 });
 
 // Create new product
-router.post('/', upload.single('image'), (req, res, next) => {
+router.post('/', auth, upload.single('image'), (req, res, next) => {
   console.log('🟡 Multer processed - req.body:', req.body);
   console.log('🟡 Multer processed - req.file:', req.file);
   next();
 }, createProduct);
-
+ 
 // Get all products
 router.get('/', getProducts);
 
@@ -34,5 +37,15 @@ router.get('/:id', getProductById);
 
 // Add route for serving product image from DB
 router.get('/:id/image', getProductImage); // Use the controller function
+
+// Update a product
+router.put('/:id', auth, upload.single('image'), (req, res, next) => {
+  console.log('🟡 Multer processed for update - req.body:', req.body);
+  console.log('🟡 Multer processed for update - req.file:', req.file);
+  next();
+}, updateProduct);
+
+// Delete a product
+router.delete('/:id', auth, deleteProduct);
 
 module.exports = router;

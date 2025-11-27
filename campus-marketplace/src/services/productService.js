@@ -83,10 +83,33 @@ const productService = {
   // Update product
   updateProduct: async (productId, productData) => {
     try {
-      const response = await api.put(`/products/${productId}`, productData);
-      return response.data;
+      console.log('🟡 productService - Sending FormData for update...');
+      
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`${API_URL}/products/${productId}`, {
+        method: 'PUT',
+        body: productData, // Pass FormData directly
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          // Let browser set Content-Type automatically for FormData
+        }
+      });
+
+      console.log('🟡 Response status for update:', response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('✅ productService - Update Success:', result);
+      return result;
+      
     } catch (error) {
-      throw error.response?.data?.message || 'Failed to update product';
+      console.error('❌ productService update error:', error);
+      throw error.message || 'Failed to update product';
     }
   },
 

@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import productService from '../services/productService';
 
 function SellPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   
+  const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     category: '',
@@ -14,7 +17,85 @@ function SellPage() {
     location: ''
   });
   const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingProductId, setEditingProductId] = useState(null);
+  const [currentImageUrl, setCurrentImageUrl] = useState(null); // To store URL of existing product image
+  const [removeImageFlag, setRemoveImageFlag] = useState(false); // Flag to tell backend to remove image
+
+  // Effect to clean up object URL when imagePreview changes
+  useEffect(() => {
+    return () => {
+      if (imagePreview && imagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  // Check authentication and load product data for edit mode
+  useEffect(() => {
+    const checkAuthAndLoadProduct = async () => {
+      const token = localStorage.getItem('token');
+      const userData = localStorage.getItem('user');
+      
+      if (!token || !userData) {
+        alert('Please login to sell items');
+        navigate('/login');
+        return;
+      }
+      
+      try {
+        setUser(JSON.parse(userData));
+        setAuthChecked(true);
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/login');
+        return;
+      }
+
+      // Check if in edit mode
+      const editId = searchParams.get('edit');
+      if (editId) {
+        setIsEditMode(true);
+        setEditingProductId(editId);
+        setLoading(true);
+        try {
+          const productToEdit = await productService.getProductById(editId);
+          if (productToEdit) {
+            setFormData({
+              name: productToEdit.name || '',
+              category: productToEdit.category || '',
+              price: productToEdit.price || '',
+              description: productToEdit.description || '',
+              contact: productToEdit.contact || '',
+              location: productToEdit.location || ''
+            });
+            // Set current image URL for preview if available
+            if (productToEdit.hasImage) {
+              const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
+              setCurrentImageUrl(`${baseUrl}/products/${productToEdit._id}/image`);
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching product for edit:', error);
+          alert('Failed to load product for editing. Please try again.');
+          navigate('/sell'); // Go back to create mode
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setIsEditMode(false);
+        setEditingProductId(null);
+        setCurrentImageUrl(null);
+      }
+    };
+
+    checkAuthAndLoadProduct();
+  }, [navigate, searchParams, location.search]); // Depend on searchParams and location.search for re-evaluation
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,15 +106,69 @@ function SellPage() {
   };
 
   const handleImageChange = (e) => {
-    setImageFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Please select a valid image file (JPEG, PNG, WebP)');
+        e.target.value = null; // Clear the input
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        alert('Image size should be less than 5MB');
+        e.target.value = null; // Clear the input
+        return;
+      }
+
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+      setRemoveImageFlag(false); // If new image is uploaded, don't remove existing one
+      setCurrentImageUrl(null); // Clear current image preview if new file is selected
+    } else {
+      setImageFile(null);
+      setImagePreview(null);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    if (window.confirm('Are you sure you want to remove the current image?')) {
+      setImageFile(null);
+      setImagePreview(null);
+      setCurrentImageUrl(null);
+      setRemoveImageFlag(true); // Set flag to remove image on backend
+      // Clear file input if it exists
+      const fileInput = document.querySelector('input[type="file"]');
+      if (fileInput) fileInput.value = '';
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Check authentication again before submission
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+    
+    if (!token || !userData) {
+      alert('Session expired. Please login again.');
+      navigate('/login');
+      return;
+    }
+
     setLoading(true);
     
-    if (!formData.name || !formData.category || !formData.price || !imageFile) {
-      alert('Please fill all required fields and upload an image.');
+    if (!formData.name || !formData.category || !formData.price) {
+      alert('Please fill all required fields.');
+      setLoading(false);
+      return;
+    }
+
+    if (!isEditMode && !imageFile) { // Image is required only for new product creation
+      alert('Please upload an image for the new product.');
       setLoading(false);
       return;
     }
@@ -44,35 +179,92 @@ function SellPage() {
       productData.append('price', Number(formData.price));
       productData.append('description', formData.description);
       productData.append('category', formData.category);
-      productData.append('image', imageFile);
       productData.append('contact', formData.contact);
       productData.append('location', formData.location);
 
+      if (imageFile) {
+        productData.append('image', imageFile);
+      } else if (isEditMode && removeImageFlag) {
+        productData.append('removeImage', 'true'); // Tell backend to remove image
+      }
+
+      // Get user data for backend (if needed, though auth middleware should handle seller ID)
+      // const currentUser = JSON.parse(userData);
+      // productData.append('userId', currentUser.id);
+
       console.log('🟡 Sending to backend...');
       
-      const result = await productService.createProduct(productData);
-      console.log('✅ SUCCESS! Product created:', result);
+      let result;
+      if (isEditMode) {
+        result = await productService.updateProduct(editingProductId, productData);
+        alert('✅ Product updated successfully!');
+      } else {
+        result = await productService.createProduct(productData);
+        alert('✅ Product listed successfully!');
+      }
       
-      alert('✅ Product listed successfully!');
+      console.log('✅ SUCCESS! Product operation:', result);
+      
+      // Reset form
+      setFormData({
+        name: '',
+        category: '',
+        price: '',
+        description: '',
+        contact: '',
+        location: ''
+      });
+      setImageFile(null);
+      setImagePreview(null);
+      setCurrentImageUrl(null);
+      setRemoveImageFlag(false);
+      
+      // Reset file input
+      const fileInput = document.querySelector('input[type="file"]');
+      if (fileInput) fileInput.value = '';
       
       navigate('/');
       
     } catch (error) {
-      console.error('❌ ERROR creating product:', error);
-      alert('❌ Failed to list product: ' + error);
+      console.error('❌ ERROR product operation:', error);
+      alert('❌ Failed to ' + (isEditMode ? 'update' : 'list') + ' product: ' + (error.response?.data?.message || error.message));
     } finally {
       setLoading(false);
     }
   };
+
+  // Don't render until auth check and initial product loading for edit mode is complete
+  if (!authChecked || (isEditMode && loading)) {
+    return (
+      <div className="container py-5">
+        <div className="text-center">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <p className="mt-2">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-5">
       <div className="row justify-content-center">
         <div className="col-md-10 col-lg-8">
           
-          <div className="text-center mb-4">
-            <h1 className="h3 fw-bold text-primary">Sell Your Item</h1>
-            <p className="text-muted">Quick and easy - reach students in minutes</p>
+          {/* User Info Header */}
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h1 className="h3 fw-bold text-primary">{isEditMode ? 'Edit Your Product' : 'Sell Your Item'}</h1>
+              <p className="text-muted">Quick and easy - reach students in minutes</p>
+            </div>
+            {user && (
+              <div className="text-end">
+                <small className="text-muted">Logged in as</small>
+                <br />
+                <strong>{user.name || user.email}</strong>
+              </div>
+            )}
           </div>
 
           <div className="card shadow">
@@ -126,15 +318,40 @@ function SellPage() {
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label fw-semibold">Product Image *</label>
+                  <label className="form-label fw-semibold">Product Image {isEditMode && !currentImageUrl && !imagePreview ? '*' : ''}</label>
                   <input
                     type="file"
                     className="form-control"
                     name="image"
-                    accept="image/png, image/jpeg, image/jpg"
+                    accept="image/png, image/jpeg, image/jpg, image/webp"
                     onChange={handleImageChange}
-                    required
+                    required={!isEditMode || (!currentImageUrl && !imagePreview)} // Required for new products or if no image exists in edit mode
                   />
+                  
+                  {(imagePreview || currentImageUrl) && (
+                    <div className="mt-3">
+                      <p className="small text-muted mb-2">Image Preview:</p>
+                      <img 
+                        src={imagePreview || currentImageUrl} 
+                        alt="Preview" 
+                        className="img-thumbnail"
+                        style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'cover' }}
+                      />
+                      {isEditMode && ( // Show remove button only in edit mode
+                        <button 
+                          type="button" 
+                          className="btn btn-sm btn-outline-danger ms-2"
+                          onClick={handleRemoveImage}
+                        >
+                          Remove Image
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  
+                  <div className="form-text">
+                    Supported formats: JPEG, PNG, WebP (Max 5MB)
+                  </div>
                 </div>
 
                 <div className="mb-3">
@@ -180,9 +397,16 @@ function SellPage() {
                   <button 
                     type="submit" 
                     className="btn btn-primary btn-lg"
-                    disabled={loading}
+                    disabled={loading || !user}
                   >
-                    {loading ? 'Listing...' : 'List My Product'}
+                    {loading ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                        {isEditMode ? 'Updating...' : 'Listing...'}
+                      </>
+                    ) : (
+                      isEditMode ? 'Update Product' : 'List My Product'
+                    )}
                   </button>
                   <button 
                     type="button" 
@@ -200,9 +424,10 @@ function SellPage() {
           <div className="mt-4 p-3 bg-light rounded">
             <h6 className="fw-semibold">💡 Quick Tips:</h6>
             <ul className="small mb-0">
-              <li>Add clear photos</li>
-              <li>Be ready to negotiate price</li>
-              <li>Meet in safe public places</li>
+              <li>Add clear photos for better visibility</li>
+              <li>Set a reasonable price for quick sale</li>
+              <li>Be ready to negotiate</li>
+              <li>Meet in safe public places on campus</li>
             </ul>
           </div>
 
