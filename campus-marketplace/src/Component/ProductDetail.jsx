@@ -40,15 +40,21 @@ function ProductDetail() {
     navigate(-1);
   };
   
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) {
-      return '/images/default-product.jpg'; // Fallback image
+  const getImageUrl = (image, productId) => {
+    // If image is an object with data (database storage)
+    if (image && image.data) {
+      return `/api/products/${productId}/image`;
     }
-    if (imagePath.startsWith('http')) {
-      return imagePath;
+    // If image is a string URL
+    if (typeof image === 'string') {
+      if (image.startsWith('http')) {
+        return image;
+      }
+      const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
+      return `${baseUrl}${image}`;
     }
-    const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
-    return `${baseUrl}${imagePath}`;
+    // Fallback
+    return '/images/default-product.jpg';
   };
 
   if (loading) {
@@ -87,7 +93,7 @@ function ProductDetail() {
     status: product.status || 'available'
   };
 
-  const imageUrl = getImageUrl(product.image);
+  const imageUrl = getImageUrl(product.image, product._id);
 
   return (
     <div className="container-fluid py-5 bg-light">
@@ -107,6 +113,7 @@ function ProductDetail() {
                 alt={product.name}
                 className="img-fluid rounded-start h-100"
                 style={{ objectFit: 'cover', minHeight: '500px' }}
+                loading="lazy"
                 onError={(e) => { e.target.onerror = null; e.target.src='/images/default-product.jpg'; }}
               />
             </div>

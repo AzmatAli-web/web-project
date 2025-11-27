@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect } from 'react';
+import { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import cartService from '../services/cartService';
 
 const CartContext = createContext();
@@ -6,11 +6,10 @@ const CartContext = createContext();
 // Cart actions
 const CART_ACTIONS = {
   SET_CART: 'SET_CART',
-  ADD_ITEM: 'ADD_ITEM',
-  REMOVE_ITEM: 'REMOVE_ITEM',
-  CLEAR_CART: 'CLEAR_CART',
+  // ADD_ITEM and REMOVE_ITEM will now directly dispatch SET_CART
   SET_LOADING: 'SET_LOADING',
-  SET_ERROR: 'SET_ERROR'
+  SET_ERROR: 'SET_ERROR',
+  CLEAR_CART_LOCAL: 'CLEAR_CART_LOCAL' // New action for local clear
 };
 
 // Cart reducer
@@ -20,13 +19,6 @@ const cartReducer = (state, action) => {
       return {
         ...state,
         cart: action.payload,
-        loading: false,
-        error: null
-      };
-    
-    case CART_ACTIONS.ADD_ITEM:
-      return {
-        ...state,
         loading: false,
         error: null
       };
@@ -44,7 +36,7 @@ const cartReducer = (state, action) => {
         error: action.payload
       };
     
-    case CART_ACTIONS.CLEAR_CART:
+    case CART_ACTIONS.CLEAR_CART_LOCAL: // Handle local clear
       return {
         ...state,
         cart: { items: [], totalAmount: 0 },
@@ -66,12 +58,8 @@ const initialState = {
 export const CartProvider = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
-  // Load cart on component mount
-  useEffect(() => {
-    fetchCart();
-  }, []);
-
-  const fetchCart = async () => {
+  // Memoize fetchCart to prevent unnecessary re-renders of consumers
+  const fetchCart = useCallback(async () => {
     try {
       dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
       const cart = await cartService.getCart();
@@ -79,40 +67,49 @@ export const CartProvider = ({ children }) => {
     } catch (error) {
       dispatch({ type: CART_ACTIONS.SET_ERROR, payload: error.message });
     }
-  };
+  }, []); // Empty dependency array means this function is created once
 
-  const addToCart = async (productId, quantity = 1) => {
+  // Load cart on component mount
+  useEffect(() => {
+    fetchCart();
+  }, [fetchCart]); // fetchCart is now a dependency
+
+  // Memoize addToCart
+  const addToCart = useCallback(async (productId, quantity = 1) => {
     try {
       dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
-      await cartService.addToCart(productId, quantity);
-      // Refresh cart after adding item
-      await fetchCart();
-      dispatch({ type: CART_ACTIONS.ADD_ITEM });
+      // Assuming cartService.addToCart returns the updated cart
+      const updatedCart = await cartService.addToCart(productId, quantity);
+      dispatch({ type: CART_ACTIONS.SET_CART, payload: updatedCart });
     } catch (error) {
       dispatch({ type: CART_ACTIONS.SET_ERROR, payload: error.message });
       throw error;
     }
-  };
+  }, []); // Empty dependency array means this function is created once
 
-  const removeFromCart = async (productId) => {
+  // Memoize removeFromCart
+  const removeFromCart = useCallback(async (productId) => {
     try {
-      await cartService.removeFromCart(productId);
-      await fetchCart();
+      dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
+      // Assuming cartService.removeFromCart returns the updated cart
+      const updatedCart = await cartService.removeFromCart(productId);
+      dispatch({ type: CART_ACTIONS.SET_CART, payload: updatedCart });
     } catch (error) {
       dispatch({ type: CART_ACTIONS.SET_ERROR, payload: error.message });
       throw error;
     }
-  };
+  }, []); // Empty dependency array means this function is created once
 
-  const clearCart = async () => {
+  // Memoize clearCart
+  const clearCart = useCallback(async () => {
     try {
       await cartService.clearCart();
-      dispatch({ type: CART_ACTIONS.CLEAR_CART });
+      dispatch({ type: CART_ACTIONS.CLEAR_CART_LOCAL }); // Dispatch local clear
     } catch (error) {
       dispatch({ type: CART_ACTIONS.SET_ERROR, payload: error.message });
       throw error;
     }
-  };
+  }, []); // Empty dependency array means this function is created once
 
   const getCartCount = () => {
     return state.cart.items.reduce((total, item) => total + item.quantity, 0);

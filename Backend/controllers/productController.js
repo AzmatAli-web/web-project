@@ -39,7 +39,7 @@ const getProductsByCategory = async (req, res) => {
   }
 };
 
-// Create new product - UPDATED FOR DATABASE IMAGE STORAGE
+// Create new product - UPDATED WITH DEBUG
 const createProduct = async (req, res) => {
   try {
     // SAFE FIELD ACCESS
@@ -50,16 +50,21 @@ const createProduct = async (req, res) => {
     const contact = req.body?.contact;
     const location = req.body?.location;
 
-    console.log('Extracted fields:', { name, price, category });
+    console.log('🟡 Extracted fields:', { name, price, category });
+    console.log('🟡 req.file exists:', !!req.file);
+    console.log('🟡 req.file buffer length:', req.file?.buffer?.length);
+    console.log('🟡 req.file mimetype:', req.file?.mimetype);
 
     // Handle image storage in database
     let imageData = null;
-    if (req.file) {
+    if (req.file && req.file.buffer) {
       imageData = {
         data: req.file.buffer,
         contentType: req.file.mimetype
       };
-      console.log('✅ Image stored in database');
+      console.log('✅ Image stored in database - Size:', req.file.buffer.length, 'bytes');
+    } else {
+      console.log('❌ No file or file buffer received');
     }
 
     // Validate required fields
@@ -156,11 +161,29 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+// Get product image from database
+const getProductImage = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product || !product.image || !product.image.data || !product.image.contentType) {
+      return res.status(404).send('Image not found');
+    }
+
+    res.set('Content-Type', product.image.contentType);
+    res.send(product.image.data);
+  } catch (error) {
+    console.error('Error serving product image:', error);
+    res.status(500).json({ message: 'Server error serving image' });
+  }
+};
+
 module.exports = {
   getProducts,
   getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
-  getProductsByCategory
+  getProductsByCategory,
+  getProductImage // Export the new function
 };

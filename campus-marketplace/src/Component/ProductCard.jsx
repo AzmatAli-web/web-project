@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddToCartButton from './Cart/AddToCartButton';
 
-function ProductCard({ product }) {
+const ProductCard = React.memo(({ product }) => {
   const navigate = useNavigate();
 
   const handleViewDetails = () => {
@@ -19,18 +19,18 @@ function ProductCard({ product }) {
     status: product.status || 'available'
   };
 
-  const getImageUrl = (product) => {
-    // If product has image data in database, use the image route
-    if (product.image && product.image.data) {
-      return `/api/products/${product._id}/image`;
+  const getImageUrl = (prod) => {
+    // If prod has image data in database, use the image route
+    if (prod.image && prod.image.data) {
+      return `/api/products/${prod._id}/image`;
     }
-    // If product has image URL (placeholder), use it
-    if (product.image && typeof product.image === 'string') {
-      if (product.image.startsWith('http')) {
-        return product.image;
+    // If prod has image URL (placeholder), use it
+    if (prod.image && typeof prod.image === 'string') {
+      if (prod.image.startsWith('http')) {
+        return prod.image;
       }
       const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
-      return `${baseUrl}${product.image}`;
+      return `${baseUrl}${prod.image}`;
     }
     // Fallback image
     return '/images/default-product.jpg';
@@ -76,6 +76,6 @@ function ProductCard({ product }) {
       </div>
     </article>
   );
-}
+});
 
 export default ProductCard;
