@@ -76,8 +76,8 @@ function SellPage() {
             });
             // Set current image URL for preview if available
             if (productToEdit.hasImage) {
-              const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
-              setCurrentImageUrl(`${baseUrl}/products/${productToEdit._id}/image`);
+              // ✅ FIXED: Use the correct relative path for the image preview
+              setCurrentImageUrl(`/api/products/${productToEdit._id}/image`);
             }
           }
         } catch (error) {

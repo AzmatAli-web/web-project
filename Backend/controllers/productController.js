@@ -1,6 +1,6 @@
 const Product = require('../models/product');
 
-// Get all products
+// Get all products - UPDATED
 const getProducts = async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 }).populate('seller', 'name email');
@@ -24,11 +24,11 @@ const getProducts = async (req, res) => {
   }
 };
 
-// Get single product by ID
+// Get single product by ID - UPDATED
 const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id).populate('seller', 'name email');
-    
+
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
@@ -49,12 +49,22 @@ const getProductById = async (req, res) => {
   }
 };
 
-// Get products by category
+// Get products by category - UPDATED
 const getProductsByCategory = async (req, res) => {
   try {
     const { categoryName } = req.params;
     const products = await Product.find({ category: { $regex: new RegExp(`^${categoryName}$`, 'i') } }).populate('seller', 'name email');
-    res.json(products);
+
+    // Process products to include hasImage flag and remove binary data
+    const processedProducts = products.map(product => {
+      const productObj = product.toObject();
+      productObj.hasImage = !!(productObj.image && productObj.image.data);
+      delete productObj.image;
+      return productObj;
+    });
+
+    res.json(processedProducts);
+
   } catch (error) {
     console.error('Error fetching products by category:', error);
     res.status(500).json({ message: 'Server error' });
@@ -144,13 +154,13 @@ const createProduct = async (req, res) => {
   }
 };
 
-// Update product
+// Update product - UPDATED with ownership check
 const updateProduct = async (req, res) => {
   try {
     const { name, price, description, category, contact, location, status } = req.body;
-    
+
     const product = await Product.findById(req.params.id);
-    
+
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
@@ -199,11 +209,11 @@ const updateProduct = async (req, res) => {
   }
 };
 
-// Delete product
+// Delete product - UPDATED with ownership check
 const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-    
+
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
@@ -214,7 +224,7 @@ const deleteProduct = async (req, res) => {
     }
 
     await Product.findByIdAndDelete(req.params.id);
-    
+
     res.json({ message: 'Product deleted successfully' });
   } catch (error) {
     console.error('Error deleting product:', error);

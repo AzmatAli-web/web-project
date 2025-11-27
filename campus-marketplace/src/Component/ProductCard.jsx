@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddToCartButton from './Cart/AddToCartButton';
 
 const ProductCard = React.memo(({ product }) => {
   const navigate = useNavigate();
+  const [imageSrc, setImageSrc] = useState('/images/default-product.jpg'); // Initialize with default image
 
   const handleViewDetails = () => {
     if (product && product._id) {
@@ -19,39 +20,34 @@ const ProductCard = React.memo(({ product }) => {
     status: product.status || 'available'
   };
 
-  const getImageUrl = (prod) => {
-    // If prod has an image stored in the database, use the image route
-    if (prod.hasImage) {
-      return `/api/products/${String(prod._id)}/image`;
-    }
-    // If prod has image URL (placeholder), use it
-    if (prod.image && typeof prod.image === 'string') {
-      if (prod.image.startsWith('http')) {
-        return prod.image;
+  useEffect(() => {
+    // Function to determine the image URL
+    const getImageUrl = (prod) => {
+      if (prod && prod.hasImage && prod._id) {
+        return `/api/products/${String(prod._id)}/image`;
       }
-      const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
-      return `${baseUrl}${prod.image}`;
+      return '/images/default-product.jpg'; // Fallback to default image
+    };
+    setImageSrc(getImageUrl(product));
+  }, [product]);
+
+  const handleImageError = () => {
+    // If the current source is not already the default one, set it to the default.
+    // This prevents an infinite loop if the default image itself is broken.
+    if (imageSrc !== '/images/default-product.jpg') {
+      setImageSrc('/images/default-product.jpg');
     }
-    // Fallback image
-    return '/images/default-product.jpg';
   };
-  
-  const imageUrl = getImageUrl(product);
 
   return (
     <article className="card h-100 shadow-sm">
       <img 
-        src={imageUrl} 
+        src={imageSrc} 
         alt={product.name} 
         className="card-img-top" 
         style={{ height: '180px', objectFit: 'cover' }} 
         loading="lazy" // Add lazy loading
-        onError={(e) => { 
-          if (e.target.src !== '/images/default-product.jpg') { // Prevent endless loop if default also fails
-            e.target.onerror = null; // Prevent infinite loop
-            e.target.src='/images/default-product.jpg'; 
-          }
-        }}
+        onError={handleImageError}
       />
       <div className="card-body d-flex flex-column">
         <h5 className="card-title" style={{ minHeight: '48px' }}>{product.name}</h5>

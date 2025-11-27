@@ -76,7 +76,8 @@ function CategoryPage() {
                 <div key={product._id} className="col-12 col-sm-6 col-md-4 col-lg-3">
                   <div className="card h-100 shadow-sm">
                     <img 
-                      src={product.image || '/images/default-product.jpg'} 
+                      // ✅ FIXED: Use the correct image URL logic
+                      src={product.hasImage ? `/api/products/${product._id}/image` : '/images/default-product.jpg'}
                       alt={product.name}
                       className="card-img-top"
                       style={{ height: '200px', objectFit: 'cover', cursor: 'pointer' }}

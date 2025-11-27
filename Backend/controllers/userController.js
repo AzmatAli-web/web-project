@@ -1,5 +1,5 @@
 const User = require('../models/user');
-const Product = require('../models/product'); // ✅ NEW: Import Product model
+const Product = require('../models/product'); // ✅ FIX: Standardize path to lowercase 'product'
 
 // Get all users (Admin only)
 const getUsers = async (req, res) => {
@@ -151,8 +151,8 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// ✅ NEW: Get listings for the currently authenticated user
-const getUserListings = async (req, res) => {
+// Get products for the currently authenticated user
+const getMyProducts = async (req, res) => {
   try {
     const sellerId = req.user.id;
     const products = await Product.find({ seller: sellerId }).sort({ createdAt: -1 });
@@ -183,5 +183,5 @@ module.exports = {
   updateProfile,
   approveUser,
   deleteUser,
-  getUserListings // ✅ NEW: Export the new function
+  getMyProducts // Export the new function
 };

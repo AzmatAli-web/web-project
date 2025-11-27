@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import userService from '../services/userService';
+import userService from '../services/userService'; // For profile updates and user data
 import ProfileForm from '../Component/Profile/ProfileForm';
 import UserProducts from '../Component/Profile/UserProducts';
 
@@ -25,7 +25,7 @@ function Profile() {
       console.error('Profile error:', error);
       
       // Redirect to login if not authenticated
-      if (error.includes('token') || error.includes('auth')) {
+      if (error.message && (error.message.includes('token') || error.message.includes('auth'))) {
         navigate('/login');
       }
     } finally {
@@ -39,7 +39,7 @@ function Profile() {
       setUser(response.user);
       return { success: true, message: response.message };
     } catch (error) {
-      return { success: false, message: error };
+      return { success: false, message: error.message || 'Failed to update profile' };
     }
   };
 
