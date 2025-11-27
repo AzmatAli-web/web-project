@@ -6,6 +6,7 @@ const {
   getProductsByCategory
 } = require('../controllers/productController');
 const upload = require('../utils/multerConfig');
+const Product = require('../models/product'); // ✅ ADD THIS IMPORT
 
 const router = express.Router();
 
@@ -30,5 +31,23 @@ router.get('/category/:categoryName', getProductsByCategory);
 
 // Get single product by id
 router.get('/:id', getProductById);
+
+// ✅ ADD THIS NEW ROUTE - Get product image
+router.get('/:id/image', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    
+    if (!product || !product.image || !product.image.data) {
+      return res.status(404).json({ message: 'Image not found' });
+    }
+
+    res.set('Content-Type', product.image.contentType);
+    res.send(product.image.data);
+    
+  } catch (error) {
+    console.error('Error fetching image:', error);
+    res.status(500).json({ message: 'Error fetching image' });
+  }
+});
 
 module.exports = router;

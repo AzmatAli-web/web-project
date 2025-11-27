@@ -39,7 +39,7 @@ const getProductsByCategory = async (req, res) => {
   }
 };
 
-// Create new product - UPDATED FOR MEMORY STORAGE
+// Create new product - UPDATED FOR DATABASE IMAGE STORAGE
 const createProduct = async (req, res) => {
   try {
     // SAFE FIELD ACCESS
@@ -52,11 +52,14 @@ const createProduct = async (req, res) => {
 
     console.log('Extracted fields:', { name, price, category });
 
-    // Handle memory storage - use placeholder for Railway
-    let imageUrl = 'https://via.placeholder.com/300x200?text=Product+Image';
+    // Handle image storage in database
+    let imageData = null;
     if (req.file) {
-      console.log('🟡 Image received in memory, using placeholder');
-      // File is available in req.file.buffer but we'll use placeholder for now
+      imageData = {
+        data: req.file.buffer,
+        contentType: req.file.mimetype
+      };
+      console.log('✅ Image stored in database');
     }
 
     // Validate required fields
@@ -69,7 +72,7 @@ const createProduct = async (req, res) => {
       price: Number(price),
       description: description || '',
       category,
-      image: imageUrl, // Use placeholder image
+      image: imageData, // Store image in database
       contact: contact || '',
       location: location || '',
       seller: req.user?.id || null
@@ -78,9 +81,13 @@ const createProduct = async (req, res) => {
     await product.save();
     await product.populate('seller', 'name email');
 
+    // Don't send image data in response to avoid large payloads
+    const responseProduct = product.toObject();
+    delete responseProduct.image;
+
     res.status(201).json({ 
       message: 'Product created successfully', 
-      product 
+      product: responseProduct
     });
 
   } catch (error) {

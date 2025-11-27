@@ -3,39 +3,29 @@ const mongoose = require('mongoose');
 const productSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Product name is required'],
+    required: true,
     trim: true
   },
   price: {
     type: Number,
-    required: [true, 'Price is required'],
-    min: [0, 'Price cannot be negative']
+    required: true,
+    min: 0
   },
-  description: {
-    type: String,
-    trim: true
-  },
+  description: String,
   category: {
     type: String,
-    required: [true, 'Category is required'],
+    required: true,
     trim: true
   },
   image: {
-    type: String,
-    default: '/images/default-product.jpg'
+    data: Buffer,        // Store image binary data
+    contentType: String   // Store image type
   },
-  contact: {
-    type: String,
-    trim: true,
-  },
-  location: {
-    type: String,
-    trim: true,
-  },
+  contact: String,
+  location: String,
   seller: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    // optional: reference to the seller user
+    ref: 'User'
   },
   createdAt: {
     type: Date,

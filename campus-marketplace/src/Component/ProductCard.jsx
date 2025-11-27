@@ -2,11 +2,9 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddToCartButton from './Cart/AddToCartButton';
 
-// Updated to accept full product object
 function ProductCard({ product }) {
   const navigate = useNavigate();
 
-  // Handle view details
   const handleViewDetails = () => {
     if (product && product._id) {
       navigate(`/product/${product._id}`);
@@ -21,18 +19,24 @@ function ProductCard({ product }) {
     status: product.status || 'available'
   };
 
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) {
-      return '/images/default-product.jpg'; // Fallback image
+  const getImageUrl = (product) => {
+    // If product has image data in database, use the image route
+    if (product.image && product.image.data) {
+      return `/api/products/${product._id}/image`;
     }
-    if (imagePath.startsWith('http')) {
-      return imagePath;
+    // If product has image URL (placeholder), use it
+    if (product.image && typeof product.image === 'string') {
+      if (product.image.startsWith('http')) {
+        return product.image;
+      }
+      const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
+      return `${baseUrl}${product.image}`;
     }
-    const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
-    return `${baseUrl}${imagePath}`;
+    // Fallback image
+    return '/images/default-product.jpg';
   };
   
-  const imageUrl = getImageUrl(product.image);
+  const imageUrl = getImageUrl(product);
 
   return (
     <article className="card h-100 shadow-sm">
@@ -48,7 +52,6 @@ function ProductCard({ product }) {
         <p className="card-text text-primary fw-bold mb-3">Rs. {product.price}</p>
         
         <div className="mt-auto">
-          {/* ✅ ADDED: Add to Cart Button */}
           <div className="mb-3">
             <AddToCartButton 
               product={productForCart}
