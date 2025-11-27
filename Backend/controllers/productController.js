@@ -4,7 +4,20 @@ const Product = require('../models/product');
 const getProducts = async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 }).populate('seller', 'name email');
-    res.json(products);
+    
+    // Process products to include hasImage flag and remove binary data
+    const processedProducts = products.map(product => {
+      const productObj = product.toObject();
+      if (productObj.image && productObj.image.data) {
+        productObj.hasImage = true;
+      } else {
+        productObj.hasImage = false;
+      }
+      delete productObj.image; // Remove actual image data from the response
+      return productObj;
+    });
+
+    res.json(processedProducts);
   } catch (error) {
     console.error('Error fetching products:', error);
     res.status(500).json({ message: 'Server error' });
@@ -20,7 +33,16 @@ const getProductById = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
     
-    res.json(product);
+    // Process product to include hasImage flag and remove binary data
+    const productObj = product.toObject();
+    if (productObj.image && productObj.image.data) {
+      productObj.hasImage = true;
+    } else {
+      productObj.hasImage = false;
+    }
+    delete productObj.image; // Remove actual image data from the response
+
+    res.json(productObj);
   } catch (error) {
     console.error('Error fetching product:', error);
     res.status(500).json({ message: 'Server error' });

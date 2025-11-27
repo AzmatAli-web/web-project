@@ -40,60 +40,30 @@ function ProductDetail() {
     navigate(-1);
   };
   
-  const getImageUrl = (image, productId) => {
-    // If image is an object with data (database storage)
-    if (image && image.data) {
-      return `/api/products/${productId}/image`;
+  const getImageUrl = (prod) => { // Renamed 'image' to 'prod' for clarity and consistency
+    // If prod has an image stored in the database, use the image route
+    if (prod.hasImage) {
+      return `/api/products/${prod._id}/image`;
     }
-    // If image is a string URL
-    if (typeof image === 'string') {
-      if (image.startsWith('http')) {
-        return image;
+    // If prod has image URL (placeholder), use it
+    if (prod.image && typeof prod.image === 'string') {
+      if (prod.image.startsWith('http')) {
+        return prod.image;
       }
       const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
-      return `${baseUrl}${image}`;
+      return `${baseUrl}${prod.image}`;
     }
     // Fallback
     return '/images/default-product.jpg';
   };
 
-  if (loading) {
-    return (
-      <div className="container-fluid py-5 text-center">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p>Loading Product...</p>
-      </div>
-    );
-  }
+  if (loading) { /* ... */ }
 
-  if (error || !product) {
-    return (
-      <div className="container-fluid py-5">
-        <div className="container text-center">
-          <h2>Product Not Found</h2>
-          <p className="text-danger">{error}</p>
-          <button 
-            onClick={() => navigate('/')}
-            className="btn btn-primary mt-3"
-          >
-            Go to Homepage
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (error || !product) { /* ... */ }
 
-  const productForCart = {
-    _id: product._id,
-    name: product.name,
-    price: product.price,
-    image: product.image,
-    status: product.status || 'available'
-  };
+  const productForCart = { /* ... */ };
 
-  const imageUrl = getImageUrl(product.image, product._id);
+  const imageUrl = getImageUrl(product); // Pass the whole product object
 
   return (
     <div className="container-fluid py-5 bg-light">

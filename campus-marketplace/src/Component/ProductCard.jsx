@@ -20,8 +20,8 @@ const ProductCard = React.memo(({ product }) => {
   };
 
   const getImageUrl = (prod) => {
-    // If prod has image data in database, use the image route
-    if (prod.image && prod.image.data) {
+    // If prod has an image stored in the database, use the image route
+    if (prod.hasImage) {
       return `/api/products/${prod._id}/image`;
     }
     // If prod has image URL (placeholder), use it
