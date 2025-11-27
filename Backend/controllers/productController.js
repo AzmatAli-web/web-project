@@ -166,7 +166,7 @@ const updateProduct = async (req, res) => {
     }
 
     // Check if user owns the product
-    if (product.seller._id.toString() !== req.user.id) {
+    if (product.seller.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized to update this product' });
     }
 
@@ -219,7 +219,7 @@ const deleteProduct = async (req, res) => {
     }
 
     // Check if user owns the product
-    if (product.seller._id.toString() !== req.user.id) {
+    if (product.seller.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized to delete this product' });
     }
 
