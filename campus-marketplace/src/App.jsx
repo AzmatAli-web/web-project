@@ -8,6 +8,7 @@ import ProductDetail from "./Component/ProductDetail";
 import SellPage from './Component/SellPage';
 import Admin from './Admin';
 import Profile from './Pages/Profile';
+
 import Cart from './Pages/Cart';
 
 // import AdminLogin from './Pages/AdminLogin'; // ✅ ADD THIS IMPORT
@@ -24,7 +25,7 @@ function App() {
       element: <Login/>
     },
     {
-      path: "/signup",
+      path: "signup",
       element: <Signup/>
     },
   //   {
@@ -34,6 +35,7 @@ function App() {
     {
       path: "/sell",
       element: <SellPage/>
+
     },
     {
       path: "category/:categoryId",
@@ -48,7 +50,7 @@ function App() {
       element: <Admin/>
     },
     {
-  path: "/cart",
+      path: "/cart",
   element: <Cart/>
     },
     {

@@ -61,6 +61,27 @@ const getProductsByCategory = async (req, res) => {
   }
 };
 
+// Get products by seller ID
+const getProductsBySeller = async (req, res) => {
+  try {
+    const sellerId = req.user.id;
+    const products = await Product.find({ seller: sellerId }).sort({ createdAt: -1 }).populate('seller', 'name email');
+
+    const processedProducts = products.map(product => {
+      const productObj = product.toObject();
+      productObj.hasImage = !!(productObj.image && productObj.image.data);
+      delete productObj.image;
+      return productObj;
+    });
+
+    res.json(processedProducts);
+  } catch (error) {
+    console.error('Error fetching products by seller:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
 // Create new product - UPDATED WITH DEBUG
 const createProduct = async (req, res) => {
   try {
@@ -225,6 +246,7 @@ module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
+  getProductsBySeller,
   getProductsByCategory,
   getProductImage // Export the new function
 };

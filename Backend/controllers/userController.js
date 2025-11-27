@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const Product = require('../models/product'); // ✅ NEW: Import Product model
 
 // Get all users (Admin only)
 const getUsers = async (req, res) => {
@@ -150,11 +151,37 @@ const deleteUser = async (req, res) => {
   }
 };
 
+// ✅ NEW: Get listings for the currently authenticated user
+const getUserListings = async (req, res) => {
+  try {
+    const sellerId = req.user.id;
+    const products = await Product.find({ seller: sellerId }).sort({ createdAt: -1 });
+
+    // Process products to add image URL and remove binary data
+    const processedProducts = products.map(product => {
+      const productObj = product.toObject();
+      if (productObj.image && productObj.image.data) {
+        productObj.hasImage = true;
+      } else {
+        productObj.hasImage = false;
+      }
+      delete productObj.image; // Remove image data from the response
+      return productObj;
+    });
+
+    res.json(processedProducts);
+  } catch (error) {
+    console.error('Error fetching user listings:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = { 
   getUsers, 
   getUserById, 
   getCurrentUser,
   updateProfile,
   approveUser,
-  deleteUser
+  deleteUser,
+  getUserListings // ✅ NEW: Export the new function
 };
