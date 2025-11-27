@@ -1,26 +1,12 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://accurate-compassion-production.up.railway.app/api';
-
-// Create axios instance with common config
-const api = axios.create({
-  baseURL: API_URL,
-});
-
-// Add token to requests automatically
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// userService.js - Using consistent axiosClient approach
+import axiosClient from "../api/axiosClient";
+// Import your configured client
 
 const userService = {
   // Get current user profile
   getProfile: async () => {
     try {
-      const response = await api.get('/users/me');
+      const response = await axiosClient.get('/users/me');
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to fetch profile';
@@ -30,50 +16,70 @@ const userService = {
   // Update user profile
   updateProfile: async (profileData) => {
     try {
-      const response = await api.put('/users/profile', profileData);
+      const response = await axiosClient.put('/users/profile', profileData);
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to update profile';
     }
   },
 
-  // Get user's products (we'll create this backend route later)
+  // Get user's products
   getUserProducts: async (userId) => {
     try {
-      const response = await api.get(`/products/user/${userId}`);
+      const response = await axiosClient.get(`/products/user/${userId}`);
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to fetch user products';
     }
   },
 
-  // ✅ ADDED: Get all users (admin only)
+  // Get all users (admin only)
   getAllUsers: async () => {
     try {
-      const response = await api.get('/users');
+      const response = await axiosClient.get('/users');
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to fetch users';
     }
   },
 
-  // ✅ ADDED: Approve user (admin only)
+  // Approve user (admin only)
   approveUser: async (userId) => {
     try {
-      const response = await api.put(`/users/${userId}/approve`);
+      const response = await axiosClient.put(`/users/${userId}/approve`);
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to approve user';
     }
   },
 
-  // ✅ ADDED: Delete user (admin only)
+  // Delete user (admin only)
   deleteUser: async (userId) => {
     try {
-      const response = await api.delete(`/users/${userId}`);
+      const response = await axiosClient.delete(`/users/${userId}`);
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to delete user';
+    }
+  },
+
+  // ✅ ADDED: Update user role (admin only)
+  updateUserRole: async (userId, role) => {
+    try {
+      const response = await axiosClient.put(`/users/${userId}/role`, { role });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to update user role';
+    }
+  },
+
+  // ✅ ADDED: Get user by ID
+  getUserById: async (userId) => {
+    try {
+      const response = await axiosClient.get(`/users/${userId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to fetch user';
     }
   }
 };

@@ -1,5 +1,5 @@
 // authService.js
-import axios from 'axios';
+import axiosClient from '../api/axiosClient'; // ✅ Use your configured client
 
 // Use environment variable for API URL with localhost fallback
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -9,7 +9,8 @@ export const authService = {
     try {
       console.log('Sending registration request...', userData);
       
-      const response = await axios.post(`${API_URL}/auth/register`, userData, {
+      // ✅ Use axiosClient instead of raw axios
+      const response = await axiosClient.post('/auth/register', userData, {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -17,10 +18,13 @@ export const authService = {
       
       console.log('Registration successful:', response.data);
       
-      // ✅ TOKEN STORAGE - UNCHANGED
+      // ✅ TOKEN STORAGE - UNCHANGED (This is correct)
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
+        
+        // ✅ Update axiosClient header manually (since interceptor might not catch immediate changes)
+        axiosClient.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
       }
       return response.data;
     } catch (error) {
@@ -33,7 +37,8 @@ export const authService = {
     try {
       console.log('Sending login request...', credentials);
       
-      const response = await axios.post(`${API_URL}/auth/login`, credentials, {
+      // ✅ Use axiosClient instead of raw axios
+      const response = await axiosClient.post('/auth/login', credentials, {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -45,6 +50,9 @@ export const authService = {
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
+        
+        // ✅ Update axiosClient header manually
+        axiosClient.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
       }
       return response.data;
     } catch (error) {
@@ -53,10 +61,12 @@ export const authService = {
     }
   },
 
-  // ✅ ALL TOKEN-RELATED FUNCTIONS - UNCHANGED
+  // ✅ UPDATED LOGOUT - Clear axios header too
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    // ✅ Remove Authorization header from axiosClient
+    delete axiosClient.defaults.headers.common['Authorization'];
   },
 
   getCurrentUser: () => {
@@ -66,5 +76,12 @@ export const authService = {
 
   isAuthenticated: () => {
     return !!localStorage.getItem('token');
+  },
+
+  // ✅ NEW: Get token for manual use if needed
+  getToken: () => {
+    return localStorage.getItem('token');
   }
 };
+
+export default authService;
