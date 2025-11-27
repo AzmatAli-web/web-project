@@ -159,15 +159,22 @@ const updateProduct = async (req, res) => {
   try {
     const { name, price, description, category, contact, location, status } = req.body;
 
-    // Fetch the product without populating the seller to get the raw ObjectId for comparison.
+    // Fetch the product to check ownership
     const product = await Product.findById(req.params.id);
 
     if (!product) {
+      console.log(`❌ Update Product: Product with ID ${req.params.id} not found.`);
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Check if user owns the product
-    if (product.seller.toString() !== req.user.id) {
+    console.log('🔍 Debug Ownership Check (Update Product):');
+    console.log('  Product ID:', req.params.id);
+    console.log('  Product seller field (from DB):', product.seller);
+    console.log('  JWT user ID (req.user.id):', req.user.id);
+    console.log('  Comparison: product.seller.toString() === req.user.id ->', product.seller?.toString() === req.user.id);
+
+    // Check if user owns the product. Add a check for null seller.
+    if (!product.seller || product.seller.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized to update this product' });
     }
 
@@ -219,8 +226,13 @@ const deleteProduct = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Check if user owns the product
-    if (product.seller.toString() !== req.user.id) {
+    console.log('🔍 Debug Ownership Check (Delete Product):');
+    console.log('  Product ID:', req.params.id);
+    console.log('  Product seller field (from DB):', product.seller);
+    console.log('  JWT user ID (req.user.id):', req.user.id);
+    console.log('  Comparison: product.seller.toString() === req.user.id ->', product.seller?.toString() === req.user.id);
+    // Check if user owns the product. Add a check for null seller.
+    if (!product.seller || product.seller.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized to delete this product' });
     }
 
