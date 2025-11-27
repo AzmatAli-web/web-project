@@ -159,7 +159,8 @@ const updateProduct = async (req, res) => {
   try {
     const { name, price, description, category, contact, location, status } = req.body;
 
-    const product = await Product.findById(req.params.id).populate('seller', 'id');
+    // Fetch the product without populating the seller to get the raw ObjectId for comparison.
+    const product = await Product.findById(req.params.id);
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -167,7 +168,7 @@ const updateProduct = async (req, res) => {
 
     // Check if user owns the product
     if (product.seller.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Not authorized to update this product', owner: product.seller.toString(), currentUser: req.user.id });
+      return res.status(403).json({ message: 'Not authorized to update this product' });
     }
 
     // Handle image storage in database if a new file is uploaded
