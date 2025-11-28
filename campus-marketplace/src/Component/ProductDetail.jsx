@@ -82,28 +82,6 @@ function ProductDetail() {
     }
   };
   
-  const getImageUrl = (prod) => { // Renamed 'image' to 'prod' for clarity and consistency
-    // Add defensive null check for prod
-    if (!prod) {
-      return '/images/default-product.jpg'; // Use a consistent default fallback
-    }
-
-    // If prod has an image stored in the database, use the image route
-    if (prod.hasImage) {
-      return `/api/products/${String(prod._id)}/image`;
-    }
-    // If prod has image URL (placeholder), use it
-    if (prod.image && typeof prod.image === 'string') {
-      if (prod.image.startsWith('http')) {
-        return prod.image;
-      }
-      const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
-      return `${baseUrl}${prod.image}`;
-    }
-    // Fallback
-    return '/images/default-product.jpg'; // Use a consistent default fallback
-  };
-
   if (loading) {
     return (
       <div className="d-flex justify-content-center align-items-center" style={{ height: '80vh' }}>
@@ -132,7 +110,7 @@ function ProductDetail() {
     seller: product.seller,
   };
 
-  const imageUrl = getImageUrl(product); // Pass the whole product object
+  const imageUrl = product?.imageUrl || '/images/default-product.jpg';
 
   // Check if the current user is the owner of the product
   const isOwner = currentUserId && product.seller && product.seller._id === currentUserId;

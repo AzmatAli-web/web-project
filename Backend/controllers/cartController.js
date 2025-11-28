@@ -55,7 +55,7 @@ const getCart = async (req, res) => {
     try {
         let cart = await Cart.findOne({ user: userId }).populate({
             path: 'items.product',
-            select: 'name price image'
+            select: 'name price image' // Keep populating the base fields
         });
 
         if (!cart) {
@@ -64,7 +64,19 @@ const getCart = async (req, res) => {
             await cart.save();
         }
 
-        res.status(200).json(cart);
+        const cartObj = cart.toObject();
+        if (cartObj.items && cartObj.items.length > 0) {
+            cartObj.items = cartObj.items.map(item => {
+                if (item.product && item.product.image) {
+                    const baseUrl = `${req.protocol}://${req.get('host')}`;
+                    item.product.imageUrl = `${baseUrl}${item.product.image}`;
+                } else if (item.product) {
+                    item.product.imageUrl = null;
+                }
+                return item;
+            });
+        }
+        res.status(200).json(cartObj);
     } catch (error) {
         console.error(error);
         res.status(500).send('Server Error');

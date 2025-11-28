@@ -155,22 +155,18 @@ const deleteUser = async (req, res) => {
 const getMyProducts = async (req, res) => {
   try {
     const sellerId = req.user.id;
-    const products = await Product.find({ seller: sellerId }).sort({ createdAt: -1 });
+    const products = await Product.find({ seller: sellerId }).sort({ createdAt: -1 }).lean();
 
-    // Process products to create absolute image URLs
-    const processedProducts = products.map(product => {
-      const productObj = product.toObject();
-      // If there is a relative image path, construct the full URL
-      if (productObj.image) {
+    const productsWithUrls = products.map(product => {
+      if (product.image) {
         const baseUrl = `${req.protocol}://${req.get('host')}`;
-        productObj.imageUrl = `${baseUrl}${productObj.image}`;
+        product.imageUrl = `${baseUrl}${product.image}`;
       } else {
-        productObj.imageUrl = null;
+        product.imageUrl = null;
       }
-      return productObj;
+      return product;
     });
-
-    res.json(processedProducts);
+    res.json(productsWithUrls);
   } catch (error) {
     console.error('Error fetching user listings:', error);
     res.status(500).json({ message: 'Server error' });

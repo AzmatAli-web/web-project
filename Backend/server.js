@@ -1,7 +1,6 @@
 // server.js or app.js
 const express = require('express');
 const cors = require('cors');
-const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const authRoutes = require('./routes/authRoutes');
@@ -13,13 +12,6 @@ const cartRoutes = require('./routes/cartRoutes');
 
 const app = express();
 connectDB();
-
-// Create uploads folder if it doesn't exist
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-  console.log('✅ Created uploads directory');
-}
 
 // Simple CORS fix
 app.use(cors({
@@ -39,6 +31,8 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// ✅ Serve static files from the 'uploads' directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes

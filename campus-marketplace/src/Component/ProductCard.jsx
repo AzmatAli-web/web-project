@@ -4,7 +4,7 @@ import AddToCartButton from './Cart/AddToCartButton';
 
 const ProductCard = React.memo(({ product }) => {
   const navigate = useNavigate();
-  const [imageSrc, setImageSrc] = useState('/images/default-product.jpg'); // Initialize with default image
+  const imageSrc = product?.imageUrl || '/images/default-product.jpg';
 
   const handleViewDetails = () => {
     if (product && product._id) {
@@ -20,22 +20,12 @@ const ProductCard = React.memo(({ product }) => {
     status: product.status || 'available'
   };
 
-  useEffect(() => {
-    // Function to determine the image URL
-    const getImageUrl = (prod) => {
-      if (prod && prod.hasImage && prod._id) {
-        return `/api/products/${String(prod._id)}/image`;
-      }
-      return '/images/default-product.jpg'; // Fallback to default image
-    };
-    setImageSrc(getImageUrl(product));
-  }, [product]);
-
   const handleImageError = () => {
-    // If the current source is not already the default one, set it to the default.
-    // This prevents an infinite loop if the default image itself is broken.
-    if (imageSrc !== '/images/default-product.jpg') {
-      setImageSrc('/images/default-product.jpg');
+    // This function is now simpler. If an image fails, we can try to force a default.
+    // However, the initial `imageSrc` logic should handle most cases.
+    const defaultImage = '/images/default-product.jpg';
+    if (event.target.src !== defaultImage) {
+      event.target.src = defaultImage;
     }
   };
 

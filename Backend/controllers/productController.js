@@ -1,13 +1,11 @@
 const Product = require('../models/product');
 const path = require('path');
-const fs = require('fs');
 
 // Get all products
 const getProducts = async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 }).populate('seller', 'name email').lean();
 
-    // ✅ Create absolute image URLs for each product
     const productsWithUrls = products.map(product => {
       if (product.image) {
         const baseUrl = `${req.protocol}://${req.get('host')}`;
@@ -17,6 +15,7 @@ const getProducts = async (req, res) => {
       }
       return product;
     });
+
     res.json(productsWithUrls);
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -32,7 +31,6 @@ const getProductById = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // ✅ Create absolute image URL for the single product
     if (product.image) {
       const baseUrl = `${req.protocol}://${req.get('host')}`;
       product.imageUrl = `${baseUrl}${product.image}`;
@@ -52,7 +50,6 @@ const getProductsByCategory = async (req, res) => {
     const { categoryName } = req.params;
     const products = await Product.find({ category: { $regex: new RegExp(`^${categoryName}$`, 'i') } }).populate('seller', 'name email').lean();
 
-    // ✅ Create absolute image URLs for the categorized products
     const productsWithUrls = products.map(product => {
       if (product.image) {
         const baseUrl = `${req.protocol}://${req.get('host')}`;
@@ -62,6 +59,7 @@ const getProductsByCategory = async (req, res) => {
       }
       return product;
     });
+
     res.json(productsWithUrls);
   } catch (error) {
     console.error('Error fetching products by category:', error);
@@ -85,12 +83,8 @@ const getProductsBySeller = async (req, res) => {
 const createProduct = async (req, res) => {
   try {
     const { name, price, description, category, contact, location } = req.body;
-    let imageUrl = null;
-
-    if (req.file) {
-      // Use path.posix.join to ensure forward slashes for the URL
-      imageUrl = path.posix.join('/uploads', req.file.filename);
-    }
+    // Get image path if file was uploaded
+    const imagePath = req.file ? path.posix.join('/uploads', req.file.filename) : null;
 
     if (!name || !price || !category) {
       return res.status(400).json({ message: 'Missing required fields: name, price, category' });
@@ -101,7 +95,7 @@ const createProduct = async (req, res) => {
       price: Number(price),
       description: description || '',
       category,
-      image: imageUrl, // Store image URL as a string
+      image: imagePath, // Save the image path
       contact: contact || '',
       location: location || '',
       seller: req.user?.id || null
@@ -110,7 +104,6 @@ const createProduct = async (req, res) => {
     await product.save();
     await product.populate('seller', 'name email');
 
-    // ✅ Convert to a plain object to add the absolute imageUrl
     const productObj = product.toObject();
     if (productObj.image) {
       const baseUrl = `${req.protocol}://${req.get('host')}`;
@@ -119,7 +112,7 @@ const createProduct = async (req, res) => {
 
     res.status(201).json({
       message: 'Product created successfully',
-      product: productObj // ✅ Send the modified object
+      product: productObj
     });
 
   } catch (error) {
@@ -142,11 +135,9 @@ const updateProduct = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to update this product' });
     }
 
+    // Handle image update
     if (req.file) {
-      // Set the image URL, ensuring forward slashes
       product.image = path.posix.join('/uploads', req.file.filename);
-    } else if (req.body.removeImage === 'true') {
-      product.image = null;
     }
 
     product.name = name || product.name;
@@ -160,7 +151,6 @@ const updateProduct = async (req, res) => {
     await product.save();
     await product.populate('seller', 'name email');
 
-    // ✅ Convert to a plain object to add the absolute imageUrl
     const productObj = product.toObject();
     if (productObj.image) {
       const baseUrl = `${req.protocol}://${req.get('host')}`;
@@ -169,7 +159,7 @@ const updateProduct = async (req, res) => {
 
     res.json({
       message: 'Product updated successfully',
-      product: productObj // ✅ Send the modified object
+      product: productObj
     });
   } catch (error) {
     console.error('Error updating product:', error);

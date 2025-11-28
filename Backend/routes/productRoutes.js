@@ -19,11 +19,7 @@ router.use((req, res, next) => {
 });
 
 // Create new product
-router.post('/', auth, upload.single('image'), (req, res, next) => {
-  console.log('🟡 Multer processed - req.body:', req.body);
-  console.log('🟡 Multer processed - req.file:', req.file);
-  next();
-}, createProduct);
+router.post('/', auth, upload.single('image'), createProduct);
  
 // Get all products
 router.get('/', getProducts);
@@ -35,11 +31,7 @@ router.get('/category/:categoryName', getProductsByCategory);
 router.get('/:id', getProductById);
 
 // Update a product
-router.put('/:id', auth, upload.single('image'), (req, res, next) => {
-  console.log('🟡 Multer processed for update - req.body:', req.body);
-  console.log('🟡 Multer processed for update - req.file:', req.file);
-  next();
-}, updateProduct);
+router.put('/:id', auth, updateProduct);
 
 // Delete a product
 router.delete('/:id', auth, deleteProduct);
