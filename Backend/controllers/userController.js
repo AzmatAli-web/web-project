@@ -157,15 +157,16 @@ const getMyProducts = async (req, res) => {
     const sellerId = req.user.id;
     const products = await Product.find({ seller: sellerId }).sort({ createdAt: -1 });
 
-    // Process products to add image URL and remove binary data
+    // Process products to create absolute image URLs
     const processedProducts = products.map(product => {
       const productObj = product.toObject();
-      if (productObj.image && productObj.image.data) {
-        productObj.hasImage = true;
+      // If there is a relative image path, construct the full URL
+      if (productObj.image) {
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        productObj.imageUrl = `${baseUrl}${productObj.image}`;
       } else {
-        productObj.hasImage = false;
+        productObj.imageUrl = null;
       }
-      delete productObj.image; // Remove image data from the response
       return productObj;
     });
 

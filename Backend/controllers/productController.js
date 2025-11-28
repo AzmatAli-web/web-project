@@ -1,10 +1,23 @@
 const Product = require('../models/product');
+const path = require('path');
+const fs = require('fs');
 
 // Get all products
 const getProducts = async (req, res) => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 }).populate('seller', 'name email');
-    res.json(products);
+    const products = await Product.find().sort({ createdAt: -1 }).populate('seller', 'name email').lean();
+
+    // ✅ Create absolute image URLs for each product
+    const productsWithUrls = products.map(product => {
+      if (product.image) {
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        product.imageUrl = `${baseUrl}${product.image}`;
+      } else {
+        product.imageUrl = null;
+      }
+      return product;
+    });
+    res.json(productsWithUrls);
   } catch (error) {
     console.error('Error fetching products:', error);
     res.status(500).json({ message: 'Server error' });
@@ -14,9 +27,17 @@ const getProducts = async (req, res) => {
 // Get single product by ID
 const getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).populate('seller', 'name email');
+    const product = await Product.findById(req.params.id).populate('seller', 'name email').lean();
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // ✅ Create absolute image URL for the single product
+    if (product.image) {
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      product.imageUrl = `${baseUrl}${product.image}`;
+    } else {
+      product.imageUrl = null;
     }
     res.json(product);
   } catch (error) {
@@ -29,8 +50,19 @@ const getProductById = async (req, res) => {
 const getProductsByCategory = async (req, res) => {
   try {
     const { categoryName } = req.params;
-    const products = await Product.find({ category: { $regex: new RegExp(`^${categoryName}$`, 'i') } }).populate('seller', 'name email');
-    res.json(products);
+    const products = await Product.find({ category: { $regex: new RegExp(`^${categoryName}$`, 'i') } }).populate('seller', 'name email').lean();
+
+    // ✅ Create absolute image URLs for the categorized products
+    const productsWithUrls = products.map(product => {
+      if (product.image) {
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        product.imageUrl = `${baseUrl}${product.image}`;
+      } else {
+        product.imageUrl = null;
+      }
+      return product;
+    });
+    res.json(productsWithUrls);
   } catch (error) {
     console.error('Error fetching products by category:', error);
     res.status(500).json({ message: 'Server error' });
@@ -56,8 +88,8 @@ const createProduct = async (req, res) => {
     let imageUrl = null;
 
     if (req.file) {
-      // Create a URL path for the image, suitable for frontend consumption
-      imageUrl = `/uploads/${req.file.filename}`;
+      // Use path.posix.join to ensure forward slashes for the URL
+      imageUrl = path.posix.join('/uploads', req.file.filename);
     }
 
     if (!name || !price || !category) {
@@ -69,7 +101,7 @@ const createProduct = async (req, res) => {
       price: Number(price),
       description: description || '',
       category,
-      image: imageUrl, // Store image URL
+      image: imageUrl, // Store image URL as a string
       contact: contact || '',
       location: location || '',
       seller: req.user?.id || null
@@ -104,7 +136,8 @@ const updateProduct = async (req, res) => {
     }
 
     if (req.file) {
-      product.image = `/uploads/${req.file.filename}`;
+      // Set the image URL, ensuring forward slashes
+      product.image = path.posix.join('/uploads', req.file.filename);
     } else if (req.body.removeImage === 'true') {
       product.image = null;
     }
