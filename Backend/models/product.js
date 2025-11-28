@@ -18,8 +18,7 @@ const productSchema = new mongoose.Schema({
     trim: true
   },
   image: {
-    data: Buffer,        // Store image binary data
-    contentType: String   // Store image type
+    type: String // URL to the image
   },
   contact: String,
   location: String,

@@ -12,5 +12,5 @@ const connectDB = async () => {
   }
 };
 
-// We don't need the in-memory arrays anymore since we're using MongoDB
+
 module.exports = connectDB;

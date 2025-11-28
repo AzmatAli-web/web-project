@@ -4,7 +4,6 @@ const {
   getProductById,
   createProduct,
   getProductsByCategory,
-  getProductImage, // Import the new function
   updateProduct,
   deleteProduct
 } = require('../controllers/productController');
@@ -34,9 +33,6 @@ router.get('/category/:categoryName', getProductsByCategory);
 
 // Get single product by id
 router.get('/:id', getProductById);
-
-// Add route for serving product image from DB
-router.get('/:id/image', getProductImage); // Use the controller function
 
 // Update a product
 router.put('/:id', auth, upload.single('image'), (req, res, next) => {
