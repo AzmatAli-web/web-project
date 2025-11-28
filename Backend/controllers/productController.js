@@ -110,9 +110,16 @@ const createProduct = async (req, res) => {
     await product.save();
     await product.populate('seller', 'name email');
 
+    // ✅ Convert to a plain object to add the absolute imageUrl
+    const productObj = product.toObject();
+    if (productObj.image) {
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      productObj.imageUrl = `${baseUrl}${productObj.image}`;
+    }
+
     res.status(201).json({
       message: 'Product created successfully',
-      product: product
+      product: productObj // ✅ Send the modified object
     });
 
   } catch (error) {
@@ -153,9 +160,16 @@ const updateProduct = async (req, res) => {
     await product.save();
     await product.populate('seller', 'name email');
 
+    // ✅ Convert to a plain object to add the absolute imageUrl
+    const productObj = product.toObject();
+    if (productObj.image) {
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      productObj.imageUrl = `${baseUrl}${productObj.image}`;
+    }
+
     res.json({
       message: 'Product updated successfully',
-      product: product
+      product: productObj // ✅ Send the modified object
     });
   } catch (error) {
     console.error('Error updating product:', error);
