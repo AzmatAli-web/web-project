@@ -1,8 +1,19 @@
+import { useEffect } from 'react';
 import { useCart } from '../context/CartContext';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import cartService from '../services/cartService';
 
 function Cart() {
   const { cart, loading, error, removeFromCart, clearCart, getCartTotal } = useCart();
+  const location = useLocation();
+
+  useEffect(() => {
+    const query = new URLSearchParams(location.search);
+    if (query.get('payment_success') === 'true') {
+      alert('Payment Successful');
+      clearCart();
+    }
+  }, [location]);
 
   const handleRemoveItem = async (productId) => {
     try {
@@ -22,12 +33,17 @@ function Cart() {
     }
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!cart || cart.items.length === 0) {
       alert('Your cart is empty!');
       return;
     }
-    alert('Checkout functionality will be implemented soon!');
+    try {
+      const { url } = await cartService.createCheckoutSession();
+      window.location.href = url;
+    } catch (error) {
+      console.error('Checkout error:', error);
+    }
   };
 
   if (loading) {
@@ -166,7 +182,7 @@ function Cart() {
                   className="btn btn-primary w-100 mb-2"
                   onClick={handleCheckout}
                 >
-                  Proceed to Checkout
+                  Pay with Stripe
                 </button>
                 <Link to="/" className="btn btn-outline-secondary w-100">
                   Continue Shopping

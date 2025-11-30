@@ -39,6 +39,15 @@ const cartService = {
     } catch (error) {
       throw error.response?.data?.message || 'Failed to clear cart';
     }
+  },
+
+  createCheckoutSession: async () => {
+    try {
+      const response = await axiosClient.post('/cart/create-checkout-session');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to create checkout session';
+    }
   }
 };
 
