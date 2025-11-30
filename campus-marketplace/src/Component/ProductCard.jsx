@@ -12,14 +12,6 @@ const ProductCard = React.memo(({ product }) => {
     }
   };
 
-  const productForCart = {
-    _id: product._id,
-    name: product.name,
-    price: product.price,
-    image: product.image,
-    status: product.status || 'available'
-  };
-
   const handleImageError = () => {
     // This function is now simpler. If an image fails, we can try to force a default.
     // However, the initial `imageSrc` logic should handle most cases.
@@ -46,7 +38,7 @@ const ProductCard = React.memo(({ product }) => {
         <div className="mt-auto">
           <div className="mb-3">
             <AddToCartButton 
-              product={productForCart}
+              product={product}
               size="sm"
               showQuantity={false}
             />

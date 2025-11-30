@@ -101,15 +101,6 @@ function ProductDetail() {
     );
   }
 
-  const productForCart = { 
-    _id: product._id,
-    name: product.name,
-    price: product.price,
-    image: product.image,
-    hasImage: product.hasImage,
-    seller: product.seller,
-  };
-
   const imageUrl = product?.imageUrl || '/images/default-product.jpg';
 
   // Check if the current user is the owner of the product
@@ -150,7 +141,7 @@ function ProductDetail() {
                 
                 <div className="mb-4">
                   <AddToCartButton 
-                    product={productForCart}
+                    product={product}
                     size="lg"
                     showQuantity={true}
                   />

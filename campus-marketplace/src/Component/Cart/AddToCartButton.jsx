@@ -81,7 +81,7 @@ function AddToCartButton({ product, size = 'md', showQuantity = false }) {
       <button
         className={buttonClass}
         onClick={handleAddToCart}
-        disabled={loading || product?.status !== 'available'}
+        disabled={loading || product?.isAvailable === false}
         style={{ minWidth: '140px' }}
       >
         {loading ? (
@@ -97,7 +97,7 @@ function AddToCartButton({ product, size = 'md', showQuantity = false }) {
         )}
       </button>
 
-      {product?.status !== 'available' && (
+      {product?.isAvailable === false && (
         <div className="mt-1">
           <small className="text-muted">Not available</small>
         </div>

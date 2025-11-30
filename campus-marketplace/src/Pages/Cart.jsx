@@ -107,8 +107,11 @@ function Cart() {
           <div className="col-lg-8">
             <div className="card">
               <div className="card-body">
-                {cart.items.map((item) => (
-                  <div key={item.product._id} className="row align-items-center mb-4 pb-4 border-bottom">
+                {cart.items
+                  .filter(item => item && item.product) // Filter out items with no product
+                  .map((item) => (
+                  // Use a fallback key in case product._id is missing
+                  <div key={item.product?._id || item.productId} className="row align-items-center mb-4 pb-4 border-bottom">
                     <div className="col-md-2">
                       <img
                         src={item.product.image || '/images/default-product.jpg'}
