@@ -22,8 +22,8 @@ function NavigationBar() {
   const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    // We use window.location.href to force a full refresh, which re-evaluates getCurrentUser()
-    window.location.href = '/login'; 
+    // Use React Router navigation instead of window.location.href to avoid 404 on Vercel
+    navigate('/login');
   };
 
   // Function to close navbar when a link is clicked (for mobile)

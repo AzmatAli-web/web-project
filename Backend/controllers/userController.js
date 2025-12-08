@@ -151,6 +151,35 @@ const deleteUser = async (req, res) => {
   }
 };
 
+// Delete current user's account (User self-deletion)
+const deleteCurrentUser = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    if (!userId) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    // Delete the user's account
+    const result = await User.findByIdAndDelete(userId);
+    
+    if (!result) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Also delete all user's products
+    await Product.deleteMany({ seller: userId });
+
+    res.json({ 
+      message: 'Your account has been permanently deleted',
+      success: true 
+    });
+  } catch (error) {
+    console.error('Error deleting account:', error);
+    res.status(500).json({ message: 'Server error while deleting account' });
+  }
+};
+
 // Get products for the currently authenticated user
 const getMyProducts = async (req, res) => {
   try {
@@ -180,5 +209,6 @@ module.exports = {
   updateProfile,
   approveUser,
   deleteUser,
+  deleteCurrentUser,
   getMyProducts // Export the new function
 };
