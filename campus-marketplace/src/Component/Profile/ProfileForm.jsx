@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-function ProfileForm({ user, onUpdate }) {
+function ProfileForm({ user, onUpdate, onDeleteAccount, isDeleting }) {
   const [formData, setFormData] = useState({
     name: '',
     email: ''
@@ -156,14 +156,18 @@ function ProfileForm({ user, onUpdate }) {
           
           <button
             type="button"
-            className="btn btn-outline-secondary"
-            onClick={() => setFormData({
-              name: user?.name || '',
-              email: user?.email || ''
-            })}
-            disabled={loading}
+            className="btn btn-danger"
+            onClick={onDeleteAccount}
+            disabled={loading || isDeleting}
           >
-            Reset
+            {isDeleting ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                Deleting...
+              </>
+            ) : (
+              'Delete Account'
+            )}
           </button>
         </div>
       </form>

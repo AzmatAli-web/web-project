@@ -81,6 +81,16 @@ const userService = {
     } catch (error) {
       throw error.response?.data?.message || 'Failed to fetch user';
     }
+  },
+
+  // ✅ ADDED: Delete current user account
+  deleteAccount: async () => {
+    try {
+      const response = await axiosClient.delete('/users/me');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to delete account';
+    }
   }
 };
 

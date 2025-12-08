@@ -8,7 +8,6 @@ const ManageListings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
-  const [filter, setFilter] = useState('all');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -86,11 +85,6 @@ const ManageListings = () => {
     return `http://localhost:5000/${normalizedPath}`;
   };
 
-  const filteredProducts = products.filter(product => {
-    if (filter === 'all') return true;
-    return product.status === filter;
-  });
-
   const getStatusBadge = (status) => {
     const statusConfig = {
       available: { class: 'bg-success', text: 'Available' },
@@ -139,35 +133,9 @@ const ManageListings = () => {
         </button>
       </div>
 
-      <div className="card mb-4">
-        <div className="card-body">
-          <div className="row align-items-center">
-            <div className="col-md-6">
-              <h6 className="mb-2">Filter by Status:</h6>
-              <div className="btn-group btn-group-sm">
-                {['all', 'available', 'pending', 'sold', 'rejected'].map(statusFilter => (
-                  <button
-                    key={statusFilter}
-                    className={`btn ${filter === statusFilter ? 'btn-primary' : 'btn-outline-primary'}`}
-                    onClick={() => setFilter(statusFilter)}
-                  >
-                    {statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="col-md-6 text-end">
-              <small className="text-muted">
-                Showing {filteredProducts.length} of {products.length} products
-              </small>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="card">
         <div className="card-body">
-          {filteredProducts.length > 0 ? (
+          {products.length > 0 ? (
             <div className="table-responsive">
               <table className="table table-striped table-hover">
                 <thead className="table-dark">
@@ -182,7 +150,7 @@ const ManageListings = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredProducts.map((product) => (
+                  {products.map((product) => (
                     <tr key={product._id}>
                       <td>
                         <img
@@ -214,18 +182,6 @@ const ManageListings = () => {
                       <td>
                         <div className="d-flex flex-wrap gap-1">
                           <button
-                            className="btn btn-success btn-sm"
-                            onClick={() => handleApprove(product._id)}
-                            disabled={actionLoading === product._id}
-                            title="Approve Product (Change status to Available)"
-                          >
-                            {actionLoading === product._id ? (
-                              <span className="spinner-border spinner-border-sm" />
-                            ) : (
-                              'Approve'
-                            )}
-                          </button>
-                          <button
                             className="btn btn-danger btn-sm"
                             onClick={() => handleDelete(product._id)}
                             disabled={actionLoading === product._id}
@@ -250,7 +206,7 @@ const ManageListings = () => {
           ) : (
             <div className="text-center py-4">
               <p className="text-muted">
-                {products.length === 0 ? 'No products found in the system.' : 'No products match the selected filter.'}
+                No products found in the system.
               </p>
             </div>
           )}

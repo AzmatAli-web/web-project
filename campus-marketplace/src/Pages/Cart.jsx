@@ -128,15 +128,7 @@ function Cart() {
                   .map((item) => (
                   // Use a fallback key in case product._id is missing
                   <div key={item.product?._id || item.productId} className="row align-items-center mb-4 pb-4 border-bottom">
-                    <div className="col-md-2">
-                      <img
-                        src={item.product.image || '/images/default-product.jpg'}
-                        alt={item.product.name}
-                        className="img-fluid rounded"
-                        style={{ width: '80px', height: '80px', objectFit: 'cover' }}
-                      />
-                    </div>
-                    <div className="col-md-4">
+                    <div className="col-md-6">
                       <h6 className="mb-1">{item.product.name}</h6>
                       <p className="text-primary fw-bold mb-0">Rs. {item.product.price}</p>
                     </div>

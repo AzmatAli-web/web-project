@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import AdminDashboard from './AdminSect/AdminDashboard';
 import AdminAnalytics from './AdminSect/AdminAnalytics';
 import AdminReports from './AdminSect/AdminReports';
-import AdminSettings from './AdminSect/AdminSettings';
 import ManageUsers from './AdminSect/ManageUsers';
 import ManageListings from './AdminSect/ManageListings';
 
@@ -16,7 +15,6 @@ const Admin = () => {
     reports: <AdminReports />,
     users: <ManageUsers />,
     listings: <ManageListings />,
-    settings: <AdminSettings />
   };
 
   const menuItems = [
@@ -25,7 +23,6 @@ const Admin = () => {
     { key: 'reports', icon: '📋', label: 'Reports' },
     { key: 'users', icon: '👥', label: 'Manage Users' },
     { key: 'listings', icon: '🏠', label: 'Manage Listings' },
-    { key: 'settings', icon: '⚙️', label: 'Settings' }
   ];
 
   return (

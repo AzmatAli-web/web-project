@@ -9,6 +9,7 @@ function Profile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('profile'); // 'profile' or 'products'
+  const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,6 +41,42 @@ function Profile() {
       return { success: true, message: response.message };
     } catch (error) {
       return { success: false, message: error.message || 'Failed to update profile' };
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    // First confirmation dialog
+    const confirmed = window.confirm(
+      'Are you sure you want to delete your account? This action cannot be undone.'
+    );
+    
+    if (!confirmed) return;
+
+    // Second confirmation to prevent accidental deletion
+    const doubleConfirmed = window.confirm(
+      'This will permanently delete all your data. Please confirm again.'
+    );
+    
+    if (!doubleConfirmed) return;
+
+    setDeleting(true);
+    try {
+      // Call backend API to delete account
+      await userService.deleteAccount();
+      
+      // Clear localStorage
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      
+      // Show success message
+      alert('Your account has been successfully deleted.');
+      
+      // Redirect to home page
+      navigate('/');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      alert('Failed to delete account: ' + (error.message || 'Please try again'));
+      setDeleting(false);
     }
   };
 
@@ -127,7 +164,9 @@ function Profile() {
               {activeTab === 'profile' && (
                 <ProfileForm 
                   user={user} 
-                  onUpdate={handleUpdateProfile} 
+                  onUpdate={handleUpdateProfile}
+                  onDeleteAccount={handleDeleteAccount}
+                  isDeleting={deleting}
                 />
               )}
               
