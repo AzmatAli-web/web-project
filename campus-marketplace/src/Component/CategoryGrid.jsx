@@ -28,14 +28,14 @@ function CategoryGrid() {
               className="card shadow-sm p-3 cursor-pointer"
               onClick={() => handleCategoryClick(category.id)}
               style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.55)'}
               onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
               <img 
                 src={category.image} 
                 alt={category.name} 
                 className="img-fluid rounded mb-2" 
-                style={{ height: '140px', objectFit: 'cover', width: '100%' }} 
+                style={{ height: '300px', objectFit: 'cover', width: '100%' }} 
               />
               <h6 className="mb-0">{category.name}</h6>
             </div>

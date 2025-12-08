@@ -31,10 +31,6 @@ function App() {
       path: "signup",
       element: <Signup/>
     },
-  //   {
-  // path: "/admin-login",
-  // element: <AdminLogin />
-  //   },
     {
       path: "/sell",
       element: <SellPage/>

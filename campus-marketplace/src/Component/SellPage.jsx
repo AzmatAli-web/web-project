@@ -65,7 +65,17 @@ function SellPage() {
         setLoading(true);
         try {
           const productToEdit = await productService.getProductById(editId);
-          if (productToEdit) {
+          // Get current user ID from parsed user data
+          const currentUser = JSON.parse(userData);
+
+          // PERMISSION CHECK: Ensure the current user is the seller
+          if (productToEdit && productToEdit.seller && productToEdit.seller._id !== currentUser.id) {
+            alert("Permission Denied: You are not the owner of this product.");
+            navigate('/'); // Redirect to home or a safe page
+            return;
+          }
+
+          if (productToEdit) { // Now we know the user is the owner
             setFormData({
               name: productToEdit.name || '',
               category: productToEdit.category || '',

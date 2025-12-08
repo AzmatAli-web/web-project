@@ -1,5 +1,6 @@
 const Cart = require('../models/cart');
 const Product = require('../models/product');
+const stripe = require('stripe')('sk_test_51SYsgX0xHe8lXm4KsItpcvO5UYTf0G9OEbkCP361Jj4XGC70txhIDlDs1tz62mbxCGOXdv4eNdhTs2y8W7Svtq2700YUFCuJUA');
 
 // @desc    Add product to cart
 // @route   POST /api/cart/add
@@ -136,10 +137,56 @@ const clearCart = async (req, res) => {
     }
 };
 
+// @desc    Create Stripe Checkout Session
+// @route   POST /api/cart/create-checkout-session
+// @access  Private
+const createCheckoutSession = async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const cart = await Cart.findOne({ user: userId }).populate('items.product');
+        if (!cart || cart.items.length === 0) {
+            return res.status(400).json({ message: 'Cart is empty' });
+        }
+
+        const line_items = cart.items
+            .filter(item => item.product) // Filter out items with null product
+            .map(item => {
+                return {
+                    price_data: {
+                        currency: 'usd',
+                        product_data: {
+                            name: item.product.name,
+                        },
+                        unit_amount: item.product.price * 100,
+                    },
+                    quantity: item.quantity,
+                };
+            });
+        
+        if (line_items.length === 0) {
+            return res.status(400).json({ message: 'No valid items in cart' });
+        }
+
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items,
+            mode: 'payment',
+            success_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/cart?payment_success=true`,
+            cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/cart`,
+        });
+
+        res.json({ url: session.url });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Server Error');
+    }
+};
+
 
 module.exports = {
     addToCart,
     getCart,
     removeFromCart,
-    clearCart
+    clearCart,
+    createCheckoutSession
 };

@@ -176,10 +176,6 @@ const deleteProduct = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    if (!product.seller || !product.seller.equals(req.user.id)) {
-      return res.status(403).json({ message: 'Not authorized to delete this product' });
-    }
-
     await product.deleteOne();
 
     res.json({ message: 'Product deleted successfully' });

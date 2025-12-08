@@ -63,9 +63,9 @@ const ManageUsers = () => {
     }
   };
 
-  const handleEdit = (user) => {
-    alert(`Edit feature for ${user.name} coming soon`);
-  };
+  // const handleEdit = (user) => {
+  //   alert(`Edit feature for ${user.name} coming soon`);
+  // };
 
   const getStatusBadge = (status) => {
     const statusConfig = {
@@ -159,14 +159,14 @@ const ManageUsers = () => {
                               )}
                             </button>
                           )}
-                          
+{/*                           
                           <button 
                             className="btn btn-outline-primary"
                             onClick={() => handleEdit(user)}
                             title="Edit User"
                           >
                             Edit
-                          </button>
+                          </button> */}
                           
                           {/* Prevent admin from deleting themselves */}
                           {user._id !== JSON.parse(localStorage.getItem('user'))?.id && (

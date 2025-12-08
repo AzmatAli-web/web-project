@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Stylng.css';
-import productService from '../services/productService'; // ✅ Use product service
+import productService from '../services/productService';
 
 const ManageListings = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
-  const [filter, setFilter] = useState('all'); // all, available, sold, pending
+  const [filter, setFilter] = useState('all');
+  const navigate = useNavigate();
 
-  // Load products from backend on component mount
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -18,7 +19,6 @@ const ManageListings = () => {
     setLoading(true);
     setError(null);
     try {
-      // Use productService to fetch all products from backend
       const productsData = await productService.getAllProducts();
       setProducts(productsData || []);
     } catch (err) {
@@ -30,11 +30,12 @@ const ManageListings = () => {
   };
 
   const handleApprove = async (productId) => {
+    if (!window.confirm("Are you sure you want to approve this product?")) return;
+    
     setActionLoading(productId);
     try {
-      // Update product status to approved
       await productService.updateProduct(productId, { status: 'available' });
-      setProducts(prev => prev.map(product => 
+      setProducts(prev => prev.map(product =>
         product._id === productId ? { ...product, status: 'available' } : product
       ));
       alert('Product approved successfully!');
@@ -48,7 +49,7 @@ const ManageListings = () => {
 
   const handleDelete = async (productId) => {
     if (!window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) return;
-    
+
     setActionLoading(productId);
     try {
       await productService.deleteProduct(productId);
@@ -62,11 +63,29 @@ const ManageListings = () => {
     }
   };
 
-  const handleEdit = (product) => {
-    alert(`Edit feature for "${product.name}" coming soon`);
+  const handleViewDetails = (productId) => {
+    navigate(`/product/${productId}`);
   };
 
-  // Filter products based on status
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) {
+      return 'https://via.placeholder.com/50';
+    }
+    
+    // Handle different image path formats
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    
+    // Handle Windows backslashes and ensure correct path
+    const cleanPath = imagePath.replace(/\\/g, '/');
+    
+    // Remove leading slash if present to avoid double slashes
+    const normalizedPath = cleanPath.startsWith('/') ? cleanPath.substring(1) : cleanPath;
+    
+    return `http://localhost:5000/${normalizedPath}`;
+  };
+
   const filteredProducts = products.filter(product => {
     if (filter === 'all') return true;
     return product.status === filter;
@@ -76,15 +95,15 @@ const ManageListings = () => {
     const statusConfig = {
       available: { class: 'bg-success', text: 'Available' },
       sold: { class: 'bg-secondary', text: 'Sold' },
-      pending: { class: 'bg-warning', text: 'Pending' }
+      pending: { class: 'bg-warning', text: 'Pending' },
+      rejected: { class: 'bg-danger', text: 'Rejected' }
     };
-    
-    const config = statusConfig[status] || statusConfig.pending;
+    const config = statusConfig[status] || { class: 'bg-dark', text: 'Unknown' };
     return <span className={`badge ${config.class} text-white`}>{config.text}</span>;
   };
 
   const getCategoryBadge = (category) => {
-    return <span className="badge bg-info text-white text-capitalize">{category}</span>;
+    return <span className="badge bg-info text-white text-capitalize">{category || 'Uncategorized'}</span>;
   };
 
   if (loading) return (
@@ -120,37 +139,21 @@ const ManageListings = () => {
         </button>
       </div>
 
-      {/* Filters */}
       <div className="card mb-4">
         <div className="card-body">
           <div className="row align-items-center">
             <div className="col-md-6">
               <h6 className="mb-2">Filter by Status:</h6>
               <div className="btn-group btn-group-sm">
-                <button 
-                  className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-outline-primary'}`}
-                  onClick={() => setFilter('all')}
-                >
-                  All
-                </button>
-                <button 
-                  className={`btn ${filter === 'available' ? 'btn-success' : 'btn-outline-success'}`}
-                  onClick={() => setFilter('available')}
-                >
-                  Available
-                </button>
-                <button 
-                  className={`btn ${filter === 'pending' ? 'btn-warning' : 'btn-outline-warning'}`}
-                  onClick={() => setFilter('pending')}
-                >
-                  Pending
-                </button>
-                <button 
-                  className={`btn ${filter === 'sold' ? 'btn-secondary' : 'btn-outline-secondary'}`}
-                  onClick={() => setFilter('sold')}
-                >
-                  Sold
-                </button>
+                {['all', 'available', 'pending', 'sold', 'rejected'].map(statusFilter => (
+                  <button
+                    key={statusFilter}
+                    className={`btn ${filter === statusFilter ? 'btn-primary' : 'btn-outline-primary'}`}
+                    onClick={() => setFilter(statusFilter)}
+                  >
+                    {statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
+                  </button>
+                ))}
               </div>
             </div>
             <div className="col-md-6 text-end">
@@ -182,64 +185,60 @@ const ManageListings = () => {
                   {filteredProducts.map((product) => (
                     <tr key={product._id}>
                       <td>
-                        <img 
-                          src={product.image || '/images/default-product.jpg'} 
+                        <img
+                          src={getImageUrl(product.image)}
                           alt={product.name}
                           className="rounded"
                           style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                          onError={(e) => { 
+                            e.target.onerror = null; 
+                            e.target.src = 'https://via.placeholder.com/50';
+                          }}
                         />
                       </td>
                       <td>
                         <strong>{product.name}</strong>
                         <br />
-                        <small className="text-muted">{product.description?.substring(0, 50)}...</small>
+                        <small className="text-muted">
+                          {product.description?.substring(0, 50) || 'No description'}...
+                        </small>
                       </td>
                       <td>{getCategoryBadge(product.category)}</td>
-                      <td>
-                        <strong className="text-primary">Rs. {product.price}</strong>
-                      </td>
+                      <td><strong className="text-primary">Rs. {product.price || '0.00'}</strong></td>
                       <td>{getStatusBadge(product.status)}</td>
                       <td>
                         {product.seller?.name || 'Unknown'}
                         <br />
-                        <small className="text-muted">{product.seller?.email}</small>
+                        <small className="text-muted">{product.seller?.email || 'No email'}</small>
                       </td>
                       <td>
-                        <div className="btn-group btn-group-sm">
-                          {product.status === 'pending' && (
-                            <button 
-                              className="btn btn-success"
-                              onClick={() => handleApprove(product._id)}
-                              disabled={actionLoading === product._id}
-                              title="Approve Product"
-                            >
-                              {actionLoading === product._id ? (
-                                <span className="spinner-border spinner-border-sm" />
-                              ) : (
-                                '✓ Approve'
-                              )}
-                            </button>
-                          )}
-                          
-                          <button 
-                            className="btn btn-outline-primary"
-                            onClick={() => handleEdit(product)}
-                            title="Edit Product"
-                          >
-                            Edit
-                          </button>
-                          
-                          <button 
-                            className="btn btn-outline-danger"
-                            onClick={() => handleDelete(product._id)}
+                        <div className="d-flex flex-wrap gap-1">
+                          <button
+                            className="btn btn-success btn-sm"
+                            onClick={() => handleApprove(product._id)}
                             disabled={actionLoading === product._id}
-                            title="Delete Product"
+                            title="Approve Product (Change status to Available)"
                           >
                             {actionLoading === product._id ? (
                               <span className="spinner-border spinner-border-sm" />
                             ) : (
-                              'Delete'
+                              'Approve'
                             )}
+                          </button>
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={() => handleDelete(product._id)}
+                            disabled={actionLoading === product._id}
+                            title="Delete Product"
+                          >
+                            Delete
+                          </button>
+                          <button
+                            className="btn btn-outline-primary btn-sm"
+                            onClick={() => handleViewDetails(product._id)}
+                            title="View Product Details"
+                          >
+                            View Details
                           </button>
                         </div>
                       </td>
@@ -255,42 +254,6 @@ const ManageListings = () => {
               </p>
             </div>
           )}
-        </div>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="row mt-4">
-        <div className="col-md-3">
-          <div className="card bg-primary text-white">
-            <div className="card-body text-center">
-              <h4>{products.length}</h4>
-              <small>Total Products</small>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="card bg-success text-white">
-            <div className="card-body text-center">
-              <h4>{products.filter(p => p.status === 'available').length}</h4>
-              <small>Available</small>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="card bg-warning text-white">
-            <div className="card-body text-center">
-              <h4>{products.filter(p => p.status === 'pending').length}</h4>
-              <small>Pending</small>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="card bg-secondary text-white">
-            <div className="card-body text-center">
-              <h4>{products.filter(p => p.status === 'sold').length}</h4>
-              <small>Sold</small>
-            </div>
-          </div>
         </div>
       </div>
     </div>
