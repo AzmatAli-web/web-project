@@ -1,6 +1,6 @@
 const Cart = require('../models/cart');
 const Product = require('../models/product');
-const stripe = require('stripe')('sk_test_51SYsgX0xHe8lXm4KsItpcvO5UYTf0G9OEbkCP361Jj4XGC70txhIDlDs1tz62mbxCGOXdv4eNdhTs2y8W7Svtq2700YUFCuJUA');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_51SYsgX0xHe8lXm4KsItpcvO5UYTf0G9OEbkCP361Jj4XGC70txhIDlDs1tz62mbxCGOXdv4eNdhTs2y8W7Svtq2700YUFCuJUA');
 
 // @desc    Add product to cart
 // @route   POST /api/cart/add
@@ -171,8 +171,8 @@ const createCheckoutSession = async (req, res) => {
             payment_method_types: ['card'],
             line_items,
             mode: 'payment',
-            success_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/cart?payment_success=true`,
-            cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/cart`,
+            success_url: `${process.env.FRONTEND_URL || `${req.protocol}://${req.get('host')}`}/cart?payment_success=true`,
+            cancel_url: `${process.env.FRONTEND_URL || `${req.protocol}://${req.get('host')}`}/cart`,
         });
 
         res.json({ url: session.url });
