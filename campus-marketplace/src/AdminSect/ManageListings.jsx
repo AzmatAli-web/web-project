@@ -82,7 +82,8 @@ const ManageListings = () => {
     // Remove leading slash if present to avoid double slashes
     const normalizedPath = cleanPath.startsWith('/') ? cleanPath.substring(1) : cleanPath;
     
-    return `http://localhost:5000/${normalizedPath}`;
+    // Use window.location.origin for dynamic API base URL (works for both localhost and production)
+    return `${window.location.origin}/${normalizedPath}`;
   };
 
   const getStatusBadge = (status) => {

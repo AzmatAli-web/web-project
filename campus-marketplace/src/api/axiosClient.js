@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+// Use environment variable or default to current origin for API calls
+const API_URL = import.meta.env.VITE_API_URL || `${window.location.origin}/api`;
+
 const axiosClient = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
