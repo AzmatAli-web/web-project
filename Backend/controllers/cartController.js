@@ -171,8 +171,8 @@ const createCheckoutSession = async (req, res) => {
             payment_method_types: ['card'],
             line_items,
             mode: 'payment',
-            success_url: `${process.env.FRONTEND_URL || 'https://web-project-theta-gray.vercel.app'}/cart?payment_success=true`,
-            cancel_url: `${process.env.FRONTEND_URL || 'https://web-project-theta-gray.vercel.app'}/cart`,
+            success_url: `${process.env.FRONTEND_URL || 'https://web-project-theta-gray.vercel.app'}/?payment_success=true`,
+            cancel_url: `${process.env.FRONTEND_URL || 'https://web-project-theta-gray.vercel.app'}/`,
         });
 
         res.json({ url: session.url });
