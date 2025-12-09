@@ -66,26 +66,6 @@ const ManageListings = () => {
     navigate(`/product/${productId}`);
   };
 
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) {
-      return 'https://via.placeholder.com/50';
-    }
-    
-    // Handle different image path formats
-    if (imagePath.startsWith('http')) {
-      return imagePath;
-    }
-    
-    // Handle Windows backslashes and ensure correct path
-    const cleanPath = imagePath.replace(/\\/g, '/');
-    
-    // Remove leading slash if present to avoid double slashes
-    const normalizedPath = cleanPath.startsWith('/') ? cleanPath.substring(1) : cleanPath;
-    
-    // Use window.location.origin for dynamic API base URL (works for both localhost and production)
-    return `${window.location.origin}/${normalizedPath}`;
-  };
-
   const getStatusBadge = (status) => {
     const statusConfig = {
       available: { class: 'bg-success', text: 'Available' },
@@ -155,7 +135,7 @@ const ManageListings = () => {
                     <tr key={product._id}>
                       <td>
                         <img
-                          src={getImageUrl(product.image)}
+                          src={product.imageUrl || 'https://via.placeholder.com/50'}
                           alt={product.name}
                           className="rounded"
                           style={{ width: '50px', height: '50px', objectFit: 'cover' }}

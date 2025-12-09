@@ -7,7 +7,6 @@ import Footer from "./Component/Footer.jsx";
 
 function LandingPage() {
   const bgStyle = {
-    minWidth: '800px',
     minHeight: '100vh',
     backgroundImage: `url('/images/backgroundimg.png')`,
     backgroundSize: 'cover',
@@ -16,12 +15,11 @@ function LandingPage() {
   };
 
   return (
-    <div className="container-fluid " >
-
+    <div className="container-fluid" style={{ padding: 0, overflow: 'hidden' }}>
       <NavigationBar />
-      <main>
-        <div className="container-fluid" style={{bgStyle}}>
-        <HeroSection />
+      <main style={{ backgroundColor: '#f8f9fa' }}>
+        <div className="container-fluid" style={bgStyle}>
+          <HeroSection />
         </div>
         <CategoryGrid />
         <LatestListings />
