@@ -16,28 +16,28 @@ function CategoryGrid() {
   };
 
   return (
-    <section className="container-fluid my-4 my-md-5 category-section bg-light">
-      <h2 className="h5 mb-3 mb-md-4" style={{ padding: '0 10px' }}>Browse Categories</h2>
-      <div className="row g-2 g-md-3 g-lg-4" style={{ padding: '0 5px' }}>
+    <section className="container-fluid my-5">
+      <h2 className="h5 mb-4">Browse Categories</h2>
+      <div className="row g-4" style={{minWidth:'430px'}}>
         {categories.map((category) => (
           <div 
             key={category.id}
-            className="col-6 col-md-4 col-lg-3 text-center"
+            className="col-6 col-md-3 col-lg-3 col-xl-3 text-center"
           >
             <div 
-              className="card shadow-sm p-0 cursor-pointer category-card"
+              className="card shadow-sm p-3 cursor-pointer"
               onClick={() => handleCategoryClick(category.id)}
-              style={{ cursor: 'pointer', transition: 'all 0.3s ease', height: '100%', border: 'none' }}
+              style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.55)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
               <img 
                 src={category.image} 
                 alt={category.name} 
-                className="img-fluid" 
-                style={{ height: 'clamp(100px, 25vw, 200px)', objectFit: 'cover', width: '100%' }} 
+                className="img-fluid rounded mb-2" 
+                style={{ height: '300px', objectFit: 'cover', width: '100%' }} 
               />
-              <div style={{ padding: '10px 8px' }}>
-                <h6 className="mb-0" style={{ fontSize: '0.9rem', fontWeight: '600', color: '#2c3e50' }}>{category.name}</h6>
-              </div>
+              <h6 className="mb-0">{category.name}</h6>
             </div>
           </div>
         ))}
