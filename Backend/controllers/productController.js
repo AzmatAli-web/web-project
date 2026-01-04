@@ -1,20 +1,55 @@
 const Product = require('../models/product');
 const path = require('path');
 
+// ✅ Helper function to add image URLs
+const addImageUrls = (product) => {
+  if (product.image) {
+    // Return relative URL so Vite proxy can intercept in dev
+    product.imageUrl = product.image;
+  } else {
+    product.imageUrl = null;
+  }
+  return product;
+};
+
+// ✅ NEW: Search products by query
+const searchProducts = async (req, res) => {
+  try {
+    const { q } = req.query;
+    
+    if (!q || !q.trim()) {
+      return res.json([]);
+    }
+
+    // Search in name, description, and category
+    const query = {
+      $or: [
+        { name: { $regex: q, $options: 'i' } },
+        { description: { $regex: q, $options: 'i' } },
+        { category: { $regex: q, $options: 'i' } }
+      ]
+    };
+
+    const products = await Product.find(query)
+      .sort({ createdAt: -1 })
+      .populate('seller', 'name email')
+      .lean();
+
+    const productsWithUrls = products.map(addImageUrls);
+
+    res.json(productsWithUrls);
+  } catch (error) {
+    console.error('Error searching products:', error);
+    res.status(500).json({ message: 'Server error during search' });
+  }
+};
+
 // Get all products
 const getProducts = async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 }).populate('seller', 'name email').lean();
 
-    const productsWithUrls = products.map(product => {
-      if (product.image) {
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
-        product.imageUrl = `${baseUrl}${product.image}`;
-      } else {
-        product.imageUrl = null;
-      }
-      return product;
-    });
+    const productsWithUrls = products.map(addImageUrls);
 
     res.json(productsWithUrls);
   } catch (error) {
@@ -31,13 +66,8 @@ const getProductById = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    if (product.image) {
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
-      product.imageUrl = `${baseUrl}${product.image}`;
-    } else {
-      product.imageUrl = null;
-    }
-    res.json(product);
+    const productWithUrl = addImageUrls(product);
+    res.json(productWithUrl);
   } catch (error) {
     console.error('Error fetching product:', error);
     res.status(500).json({ message: 'Server error' });
@@ -50,15 +80,7 @@ const getProductsByCategory = async (req, res) => {
     const { categoryName } = req.params;
     const products = await Product.find({ category: { $regex: new RegExp(`^${categoryName}$`, 'i') } }).populate('seller', 'name email').lean();
 
-    const productsWithUrls = products.map(product => {
-      if (product.image) {
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
-        product.imageUrl = `${baseUrl}${product.image}`;
-      } else {
-        product.imageUrl = null;
-      }
-      return product;
-    });
+    const productsWithUrls = products.map(addImageUrls);
 
     res.json(productsWithUrls);
   } catch (error) {
@@ -105,14 +127,11 @@ const createProduct = async (req, res) => {
     await product.populate('seller', 'name email');
 
     const productObj = product.toObject();
-    if (productObj.image) {
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
-      productObj.imageUrl = `${baseUrl}${productObj.image}`;
-    }
+    const productWithUrl = addImageUrls(productObj);
 
     res.status(201).json({
       message: 'Product created successfully',
-      product: productObj
+      product: productWithUrl
     });
 
   } catch (error) {
@@ -152,14 +171,11 @@ const updateProduct = async (req, res) => {
     await product.populate('seller', 'name email');
 
     const productObj = product.toObject();
-    if (productObj.image) {
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
-      productObj.imageUrl = `${baseUrl}${productObj.image}`;
-    }
+    const productWithUrl = addImageUrls(productObj);
 
     res.json({
       message: 'Product updated successfully',
-      product: productObj
+      product: productWithUrl
     });
   } catch (error) {
     console.error('Error updating product:', error);
@@ -193,4 +209,5 @@ module.exports = {
   deleteProduct,
   getProductsBySeller,
   getProductsByCategory,
+  searchProducts, // ✅ ADD THIS
 };

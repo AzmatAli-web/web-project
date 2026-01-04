@@ -1,7 +1,7 @@
 // routes/authRoutes.js
 const express = require('express');
 const router = express.Router();
-const { register, login, verify } = require('../controllers/authController');
+const { register, login, verify, verifyEmail, resendVerificationEmail } = require('../controllers/authController');
 const auth = require('../middleware/auth');
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
@@ -9,6 +9,10 @@ const jwt = require('jsonwebtoken');
 
 // PUBLIC routes
 router.post('/register', register);
+
+// Email verification routes
+router.post('/verify-email', verifyEmail);
+router.post('/resend-verification', resendVerificationEmail);
 
 // UPDATED LOGIN ROUTE
 router.post('/login', async (req, res) => {

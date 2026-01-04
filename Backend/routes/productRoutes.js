@@ -5,7 +5,8 @@ const {
   createProduct,
   getProductsByCategory,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  searchProducts
 } = require('../controllers/productController');
 const upload = require('../utils/multerConfig');
 const auth = require('../middleware/auth');
@@ -23,6 +24,9 @@ router.post('/', auth, upload.single('image'), createProduct);
  
 // Get all products
 router.get('/', getProducts);
+
+// ✅ NEW: Search products by query (must come before /:id)
+router.get('/search', searchProducts);
 
 // Get products by category
 router.get('/category/:categoryName', getProductsByCategory);

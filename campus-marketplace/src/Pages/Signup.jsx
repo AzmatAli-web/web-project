@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { z } from "zod";
+import { useNavigate, Link } from "react-router-dom";
 import FormInput from "../Component/FormInput";
 import Button from "../Component/Button";
 import { authService } from "../services/authService";
-import { useNavigate } from "react-router-dom";
 
 // Updated schema to match formData field names
 const formSchema = z.object({
@@ -28,6 +28,8 @@ function Signup() {
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [successEmail, setSuccessEmail] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -62,6 +64,7 @@ function Signup() {
 
     try {
       setLoading(true);
+      setErrors({}); // Clear previous errors
       console.log("Sending registration request...");
       
       // Send the data that matches your backend structure
@@ -73,22 +76,70 @@ function Signup() {
       
       console.log("Registration successful:", response);
       
-      // Handle success (redirect, show message, etc.)
-      navigate('/login');
+      // Show success message with verification notice
+      setSuccess(true);
+      setSuccessEmail(formData.email);
+      
+      // Redirect to login after 5 seconds
+      setTimeout(() => {
+        navigate('/login');
+      }, 5000);
       
     } catch (error) {
       console.error("Registration failed:", error);
-      setErrors({ submit: error.message });
+      // Handle both string errors and error objects
+      const errorMessage = typeof error === 'string' ? error : error?.message || 'Registration failed';
+      setErrors({ submit: errorMessage });
     } finally {
       setLoading(false);
     }
   };
   
+  if (success) {
+    return (
+      <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light p-3">
+        <div className="card shadow-lg" style={{ width: "100%", maxWidth: "500px", borderRadius: "15px" }}>
+          <div className="card-body p-4 p-md-5 text-center">
+            <div className="mb-4">
+              <h1 className="h2 fw-bold text-success mb-3">🎉 Account Created!</h1>
+              <p className="text-muted mb-4">
+                Welcome to Campus Marketplace! We've sent a verification email to:
+              </p>
+              <p className="fw-bold text-primary mb-4">{successEmail}</p>
+            </div>
+
+            <div className="alert alert-info mb-4" role="alert">
+              <h5 className="alert-heading mb-2">📧 Verify Your Email</h5>
+              <p className="mb-0 small">
+                Please check your email (including spam folder) and click the verification link to activate your account. 
+                You'll have full access to Campus Marketplace once verified!
+              </p>
+            </div>
+
+            <div className="alert alert-warning mb-4" role="alert">
+              <small>
+                <strong>Didn't receive the email?</strong> You can resend it from the verification page.
+              </small>
+            </div>
+
+            <p className="text-muted small mb-4">
+              Redirecting to login in 5 seconds...
+            </p>
+
+            <Link to="/login" className="btn btn-primary">
+              Go to Login Now
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container-fluid min-vh-300 d-flex align-items-center justify-content-center bg-light p-3 p-md-5">
-      <div className="card shadow-lg overflow-hidden" style={{ width: "100%", borderRadius: "15px" }}>
+    <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light p-3 p-md-5">
+      <div className="card shadow-lg overflow-hidden" style={{ width: "100%", maxWidth: "900px", borderRadius: "15px" }}>
         <div className="row g-0">
-          {/* Left Image */}
+          {/* Left Image - Hidden on mobile */}
           <div className="col-lg-6 d-none d-lg-block">
             <div
               className="h-700"
@@ -110,7 +161,7 @@ function Signup() {
 
           {/* Signup Form */}
           <div className="col-lg-6">
-            <div className="card-body p-4 p-md-5">
+            <div className="card-body p-3 p-sm-4 p-md-5">
               <div className="text-center mb-4">
                 <h1 className="h3 fw-bold text-primary">Campus Marketplace</h1>
                 <h2 className="h5 text-muted mt-2">Join Campus Marketplace</h2>
@@ -174,7 +225,7 @@ function Signup() {
                       id="agreeToTerms"
                     />
                     <label className="form-check-label" htmlFor="agreeToTerms">
-                      I agree to the <a href="/terms" className="text-decoration-none">Terms & Conditions</a>
+                      I agree to the <Link to="/terms" className="text-decoration-none">Terms & Conditions</Link>
                     </label>
                   </div>
                   {errors.agreeToTerms && <div className="invalid-feedback d-block">{errors.agreeToTerms}</div>}
@@ -191,8 +242,8 @@ function Signup() {
                 </Button>
 
                 <div className="text-center">
-                  <p className="text-muted">
-                    Already have an account? <a href="/login" className="text-decoration-none">Login here</a>
+                  <p className="text-muted small">
+                    Already have an account? <Link to="/login" className="text-decoration-none">Login here</Link>
                   </p>
                 </div>
               </form>

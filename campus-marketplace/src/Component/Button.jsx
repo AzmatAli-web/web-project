@@ -20,7 +20,7 @@ function Button({
       {loading ? (
         <>
           <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-          Loading...
+          {typeof children === 'string' ? 'Processing...' : children}
         </>
       ) : (
         children

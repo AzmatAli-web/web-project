@@ -20,9 +20,7 @@ function LandingPage() {
 
       <NavigationBar />
       <main>
-        <div className="container-fluid" style={{bgStyle}}>
         <HeroSection />
-        </div>
         <CategoryGrid />
         <LatestListings />
         <CallToAction />

@@ -32,6 +32,21 @@ const productService = {
     }
   },
 
+  // ✅ NEW: Search products by query
+  searchProducts: async (query) => {
+    try {
+      if (!query.trim()) {
+        return [];
+      }
+      const response = await axiosClient.get('/products/search', {
+        params: { q: query }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to search products';
+    }
+  },
+
   // Create new product
   createProduct: async (productData) => {
     try {

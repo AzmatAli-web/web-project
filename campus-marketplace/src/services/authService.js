@@ -18,18 +18,20 @@ export const authService = {
       
       console.log('Registration successful:', response.data);
       
-      // ✅ TOKEN STORAGE - UNCHANGED (This is correct)
+      // ✅ TOKEN STORAGE
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
         
-        // ✅ Update axiosClient header manually (since interceptor might not catch immediate changes)
+        // ✅ Update axiosClient header manually
         axiosClient.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
       }
       return response.data;
     } catch (error) {
       console.error('Registration error:', error);
-      throw error.response?.data?.message || error.message || 'Registration failed';
+      // ✅ Better error message extraction
+      const errorMsg = error.response?.data?.message || error.message || 'Registration failed';
+      throw errorMsg;
     }
   },
 

@@ -7,6 +7,12 @@ const cartService = {
       const response = await axiosClient.get('/cart');
       return response.data;
     } catch (error) {
+      // ✅ Better error handling
+      if (error.response?.status === 401) {
+        // User not authenticated
+        console.log('User not authenticated, returning empty cart');
+        return { items: [], totalAmount: 0 };
+      }
       throw error.response?.data?.message || 'Failed to fetch cart';
     }
   },
