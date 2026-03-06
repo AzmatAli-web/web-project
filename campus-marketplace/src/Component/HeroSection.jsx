@@ -33,7 +33,7 @@ function HeroSection() {
             backgroundImage: "url('/images/backgroundimg.png')",
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            backgroundAttachment: 'fixed',
+            backgroundAttachment: 'scroll',
             minHeight: 'clamp(300px, 60vw, 600px)',
             width: '100%'
           }}

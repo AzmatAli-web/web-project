@@ -4,8 +4,12 @@ const path = require('path');
 // ✅ Helper function to add image URLs
 const addImageUrls = (product) => {
   if (product.image) {
-    // Return relative URL so Vite proxy can intercept in dev
-    product.imageUrl = product.image;
+    // If image doesn't start with http, prepend /uploads/
+    if (!product.image.startsWith('http')) {
+      product.imageUrl = `/uploads/${product.image}`;
+    } else {
+      product.imageUrl = product.image;
+    }
   } else {
     product.imageUrl = null;
   }
@@ -93,8 +97,11 @@ const getProductsByCategory = async (req, res) => {
 const getProductsBySeller = async (req, res) => {
   try {
     const sellerId = req.user.id;
-    const products = await Product.find({ seller: sellerId }).sort({ createdAt: -1 }).populate('seller', 'name email');
-    res.json(products);
+    const products = await Product.find({ seller: sellerId }).sort({ createdAt: -1 }).populate('seller', 'name email').lean();
+    
+    const productsWithUrls = products.map(addImageUrls);
+    
+    res.json(productsWithUrls);
   } catch (error) {
     console.error('Error fetching products by seller:', error);
     res.status(500).json({ message: 'Server error' });
@@ -105,8 +112,8 @@ const getProductsBySeller = async (req, res) => {
 const createProduct = async (req, res) => {
   try {
     const { name, price, description, category, contact, location } = req.body;
-    // Get image path if file was uploaded
-    const imagePath = req.file ? path.posix.join('/uploads', req.file.filename) : null;
+    // Get image path if file was uploaded (store only filename, not full path)
+    const imagePath = req.file ? req.file.filename : null;
 
     if (!name || !price || !category) {
       return res.status(400).json({ message: 'Missing required fields: name, price, category' });
@@ -156,7 +163,7 @@ const updateProduct = async (req, res) => {
 
     // Handle image update
     if (req.file) {
-      product.image = path.posix.join('/uploads', req.file.filename);
+      product.image = req.file.filename;
     }
 
     product.name = name || product.name;
