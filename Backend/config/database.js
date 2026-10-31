@@ -14,6 +14,7 @@ module.exports = async function connectDB() {
         // Log diagnostic codes, never the URI, credentials, or raw error object.
         console.error("Database connection failed", {
           name: error.name,
+          failure: /auth|password|credentials/i.test(error.message || "") ? "authentication" : "connection",
           code: error.code,
           cause: error.cause?.code,
           servers: Array.from(error.reason?.servers?.values() || [], (server) => ({
