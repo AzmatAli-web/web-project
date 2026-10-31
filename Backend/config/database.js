@@ -10,6 +10,21 @@ module.exports = async function connectDB() {
         serverSelectionTimeoutMS: 8000,
         bufferCommands: false,
       })
+      .catch((error) => {
+        // Log diagnostic codes, never the URI, credentials, or raw error object.
+        console.error("Database connection failed", {
+          name: error.name,
+          code: error.code,
+          cause: error.cause?.code,
+          servers: Array.from(error.reason?.servers?.values() || [], (server) => ({
+            type: server.type,
+            error: server.error?.name,
+            code: server.error?.code,
+            cause: server.error?.cause?.code,
+          })),
+        });
+        throw error;
+      })
       .finally(() => {
         connecting = null;
       });
