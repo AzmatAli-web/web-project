@@ -1,87 +1,90 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { CartProvider } from './context/CartContext';
-import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+import { useEffect } from "react";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Outlet,
+  useLocation,
+  Link,
+} from "react-router-dom";
+import { CartProvider } from "./context/CartContext";
+import NavigationBar from "./Component/NavigationBar";
+import Footer from "./Component/Footer";
 import LandingPage from "./LandingPage";
 import Login from "./Pages/Login";
 import Signup from "./Pages/Signup";
 import VerifyEmail from "./Pages/VerifyEmail";
-import CategoryPage from "./Component/CategoryPage";
+import Browse from "./Pages/Browse";
 import ProductDetail from "./Component/ProductDetail";
-import SellPage from './Component/SellPage';
-import Admin from './Admin';
-import Profile from './Pages/Profile';
-import Cart from './Pages/Cart';
-import About from './Component/About'; // ✅ ADD THIS
-import Contact from './Component/Contact'; // ✅ ADD THIS
-import SearchResults from './Pages/SearchResults'; // ✅ ADD THIS
-import 'bootstrap/dist/css/bootstrap.min.css';
-
-const stripePromise = loadStripe('pk_test_51SYsgX0xHe8lXm4K2Aw4KhBLqxmwx6qw3MX87175DCw67MOfzerXK7o6v7sqlXVa6B6Vd3W8XEcT4cPIK7xog7430064bT82LT');
-
-function App() {
-  const router = createBrowserRouter([
-    {
-      path: "/",
-      element: <LandingPage/>
-    },
-    {
-      path: "/login",
-      element: <Login/>
-    },
-    {
-      path: "/signup",
-      element: <Signup/>
-    },
-    {
-      path: "/verify-email",
-      element: <VerifyEmail/>
-    },
-    {
-      path: "/sell",
-      element: <SellPage/>
-    },
-    {
-      path: "/category/:categoryId",
-      element: <CategoryPage/>
-    },
-    {
-      path: "/product/:productId",
-      element: <ProductDetail />
-    },
-    {
-      path: "/search", // ✅ ADD THIS
-      element: <SearchResults/>
-    },
-    {
-      path: "/admin",
-      element: <Admin/>
-    },
-    {
-      path: "/cart",
-      element: <Cart/>
-    },
-    {
-      path: "/profile",
-      element: <Profile/>
-    },
-    {
-      path: "/about", // ✅ ADD THIS
-      element: <About/>
-    },
-    {
-      path: "/contact", // ✅ ADD THIS
-      element: <Contact/>
-    }
-  ]);
-
+import SellPage from "./Component/SellPage";
+import Admin from "./Admin";
+import Profile from "./Pages/Profile";
+import Cart from "./Pages/Cart";
+import About from "./Component/About";
+import Contact from "./Component/Contact";
+function Shell() {
+  const location = useLocation();
+  useEffect(() => {
+    if (location.hash) {
+      requestAnimationFrame(() =>
+        document.getElementById(location.hash.slice(1))?.scrollIntoView(),
+      );
+    } else window.scrollTo(0, 0);
+  }, [location.pathname, location.hash]);
+  return (
+    <>
+      <a className="skip-link" href="#page-content">
+        Skip to content
+      </a>
+      <NavigationBar />
+      <div
+        id="page-content"
+        className="route-content"
+        key={location.pathname}
+        tabIndex={-1}
+      >
+        <Outlet />
+      </div>
+      <Footer />
+    </>
+  );
+}
+const router = createBrowserRouter([
+  {
+    element: <Shell />,
+    children: [
+      { path: "/", element: <LandingPage /> },
+      { path: "/login", element: <Login /> },
+      { path: "/signup", element: <Signup /> },
+      { path: "/verify-email", element: <VerifyEmail /> },
+      { path: "/browse", element: <Browse /> },
+      { path: "/category/:categoryId", element: <Browse /> },
+      { path: "/search", element: <Browse /> },
+      { path: "/products", element: <Browse /> },
+      { path: "/product/:productId", element: <ProductDetail /> },
+      { path: "/sell", element: <SellPage /> },
+      { path: "/admin", element: <Admin /> },
+      { path: "/profile", element: <Profile /> },
+      { path: "/cart", element: <Cart /> },
+      { path: "/about", element: <About /> },
+      { path: "/contact", element: <Contact /> },
+      {
+        path: "*",
+        element: (
+          <main className="site-width collection-message">
+            <h1>This page took a different path.</h1>
+            <Link to="/browse" className="button button-dark">
+              Explore the marketplace
+            </Link>
+          </main>
+        ),
+      },
+    ],
+  },
+]);
+export default function App() {
   return (
     <CartProvider>
-      <Elements stripe={stripePromise}>
-        <RouterProvider router={router}/>
-      </Elements>
+      <RouterProvider router={router} />
     </CartProvider>
   );
 }
-
-export default App;

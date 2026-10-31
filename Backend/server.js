@@ -1,49 +1,13 @@
-// server.js or app.js
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
-const authRoutes = require('./routes/authRoutes');
-const userRoutes = require('./routes/userRoutes');
-const productRoutes = require('./routes/productRoutes');
-const listingRoutes = require('./routes/listingRoutes');
-const connectDB = require('./config/database');
-const cartRoutes = require('./routes/cartRoutes');
-
-const app = express();
-connectDB();
-
-// Simple CORS fix
-app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://web-project-theta-gray.vercel.app',
-  ],
-  credentials: true
-}));
-
-// Middleware with debug
-app.use((req, res, next) => {
-  console.log('🟡 Incoming Request:', req.method, req.url);
-  console.log('🟡 Content-Type:', req.headers['content-type']);
-  next();
-});
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// ✅ Serve static files from the 'uploads' directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/listings', listingRoutes);
-app.use('/api/cart', cartRoutes);
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`✅ Backend server running on port ${PORT}`);
-});
+const app = require("./app");
+const connectDB = require("./config/database");
+const port = process.env.PORT || 5000;
+connectDB()
+  .then(() =>
+    app.listen(port, () =>
+      console.log(`Marketplace API listening on port ${port}`),
+    ),
+  )
+  .catch(() => {
+    console.error("Cannot start: check MONGODB_URI and database access.");
+    process.exitCode = 1;
+  });

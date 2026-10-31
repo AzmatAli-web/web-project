@@ -1,133 +1,117 @@
-import './Herosection.css';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-function HeroSection() {
-  const [searchQuery, setSearchQuery] = useState('');
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import Icon from "./Icon";
+export default function HeroSection() {
+  const [query, setQuery] = useState("");
   const navigate = useNavigate();
-
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-
-    try {
-      // Navigate to search results page with query parameter
-      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-    } catch (error) {
-      console.error('Search error:', error);
-    }
-  };
-
   return (
-    <section className="hero-section container-fluid py-2 py-md-4">
-      <div className="hero-wrapper mx-auto px-2 px-md-4" style={{
-        maxWidth: '1700px',
-        borderRadius: '20px',
-        overflow: 'hidden',
-        minHeight: 'clamp(300px, 60vw, 600px)'
-      }}>
-        {/* Background with overlay */}
-        <div
-          className="hero-background position-relative w-100"
-          style={{
-            backgroundImage: "url('/images/backgroundimg.png')",
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundAttachment: 'scroll',
-            minHeight: 'clamp(300px, 60vw, 600px)',
-            width: '100%'
+    <section className="hero site-width">
+      <div className="hero-copy">
+        <span className="eyebrow">
+          <span className="live-dot" /> YOUR CAMPUS. YOUR MARKETPLACE.
+        </span>
+        <h1>
+          Good finds.
+          <br />
+          Better prices.
+          <br />
+          <span>Right on campus.</span>
+        </h1>
+        <p>
+          From your next textbook to your next favourite gadget. Buy, sell, and
+          give great things a second chapter.
+        </p>
+        <form
+          className="search-box"
+          onSubmit={(e) => {
+            e.preventDefault();
+            navigate(
+              query.trim()
+                ? `/search?q=${encodeURIComponent(query.trim())}`
+                : "/browse",
+            );
           }}
         >
-          {/* Dark overlay for text contrast */}
-          <div className="position-absolute top-0 start-0 w-100 h-100" style={{
-            background: 'rgba(0, 0, 0, 0.4)',
-            zIndex: 1,
-            pointerEvents: 'none'
-          }}></div>
-
-          {/* Hero Content */}
-          <div className="hero-content w-100" style={{
-            zIndex: 2,
-            padding: 'clamp(1rem, 5vw, 3rem)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: 'clamp(300px, 60vw, 600px)',
-            position: 'relative'
-          }}>
-            <div className="container-fluid">
-              <div className="text-center" style={{ maxWidth: '95%', margin: '0 auto' }}>
-                {/* Responsive Heading */}
-                <h1 className="hero-title fw-bold text-white mb-2 mb-md-3" style={{
-                  fontSize: 'clamp(1.5rem, 6vw, 3.5rem)',
-                  lineHeight: '1.3',
-                  textShadow: '0 2px 8px rgba(0,0,0,0.3)'
-                }}>
-                  Buy & Sell with Your Campus Community
-                </h1>
-
-                {/* Responsive Subtitle */}
-                <p className="hero-subtitle text-white-50 mb-3 mb-md-4" style={{
-                  fontSize: 'clamp(0.95rem, 3vw, 1.25rem)',
-                  lineHeight: '1.5',
-                  textShadow: '0 1px 4px rgba(0,0,0,0.2)'
-                }}>
-                  Find affordable books, gadgets, and supplies from fellow students.
-                </p>
-
-                {/* Search Form - Responsive */}
-                <form className="hero-search-form d-flex justify-content-center" onSubmit={handleSearch}>
-                  <div className="input-group" style={{
-                    maxWidth: '95%',
-                    width: 'min(500px, 95vw)',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-                  }}>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Search products..."
-                      aria-label="Search products"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      style={{
-                        padding: 'clamp(0.75rem, 2vw, 0.875rem) 1rem',
-                        fontSize: '1rem',
-                        borderRadius: '8px 0 0 8px',
-                        border: 'none'
-                      }}
-                    />
-                    <button
-                      className="btn btn-primary"
-                      type="submit"
-                      style={{
-                        borderRadius: '0 8px 8px 0',
-                        border: 'none',
-                        minWidth: '50px',
-                        fontWeight: 600
-                      }}
-                    >
-                      <span className="d-none d-sm-inline">Search</span>
-                      <span className="d-inline d-sm-none">🔍</span>
-                    </button>
-                  </div>
-                </form>
-
-                {/* Quick Categories - Shown on larger screens */}
-                <div className="hero-quick-links d-none d-md-flex justify-content-center gap-2 mt-4" style={{
-                  flexWrap: 'wrap'
-                }}>
-                  <span className="badge bg-white text-primary">Books</span>
-                  <span className="badge bg-white text-primary">Gadgets</span>
-                  <span className="badge bg-white text-primary">Stationery</span>
-                  <span className="badge bg-white text-primary">Furniture</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <Icon name="search" size={22} />
+          <input
+            aria-label="Search campus marketplace"
+            placeholder="What are you looking for?"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <button className="button button-dark" type="submit">
+            <span>Find it</span>
+            <Icon name="arrow" size={19} />
+          </button>
+        </form>
+        <div className="popular-searches">
+          <span>Popular:</span>
+          {["Books", "Gadgets", "Stationery"].map((x) => (
+            <Link key={x} to={`/category/${x.toLowerCase()}`}>
+              {x}
+              <span>↗</span>
+            </Link>
+          ))}
         </div>
+        <div className="hero-footnote">
+          <span className="mini-icon">
+            <Icon name="leaf" size={17} />
+          </span>
+          Less spending. Less waste. More possibilities.
+        </div>
+      </div>
+      <div
+        className="hero-art"
+        aria-label="Discover books, gadgets and campus essentials"
+      >
+        <div className="art-orbit" />
+        <span className="art-spark spark-one">✳</span>
+        <span className="art-caption">
+          PRE-LOVED.
+          <br />
+          RE-DISCOVERED.
+        </span>
+        <Link to="/category/gadgets" className="showcase showcase-gadget">
+          <div className="showcase-image">
+            <img src="/images/laptop.jpeg" alt="Explore laptops and gadgets" />
+          </div>
+          <div className="showcase-info">
+            <div>
+              <small>UPGRADE YOUR EVERYDAY</small>
+              <strong>Gadgets with potential.</strong>
+            </div>
+            <span className="round-arrow">↗</span>
+          </div>
+        </Link>
+        <Link to="/category/books" className="showcase showcase-book">
+          <span className="showcase-tag">A new chapter</span>
+          <img src="/images/books.jpeg" alt="Explore second-hand textbooks" />
+          <div className="showcase-info">
+            <strong>Big ideas. Small prices.</strong>
+            <span>↗</span>
+          </div>
+        </Link>
+        <div className="circle-note">
+          <Icon name="leaf" size={25} />
+          <span>
+            Good for you.
+            <br />
+            Better for the planet.
+          </span>
+        </div>
+        <Link to="/sell" className="floating-note">
+          <span className="note-icon">
+            <Icon name="plus" />
+          </span>
+          <span>
+            Someone needs
+            <br />
+            <strong>what you don't.</strong>
+          </span>
+          <Icon name="arrow" />
+        </Link>
+        <span className="art-spark spark-two">✳</span>
       </div>
     </section>
   );
 }
-
-export default HeroSection;

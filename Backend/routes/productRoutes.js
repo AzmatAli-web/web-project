@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require("express");
 const {
   getProducts,
   getProductById,
@@ -6,38 +6,34 @@ const {
   getProductsByCategory,
   updateProduct,
   deleteProduct,
-  searchProducts
-} = require('../controllers/productController');
-const upload = require('../utils/multerConfig');
-const auth = require('../middleware/auth');
- 
+  searchProducts,
+  getProductsBySeller,
+} = require("../controllers/productController");
+const upload = require("../utils/multerConfig");
+const auth = require("../middleware/auth");
+
 const router = express.Router();
 
-// Debug middleware
-router.use((req, res, next) => {
-  console.log('🟡 Product Route Hit:', req.method, req.url);
-  next();
-});
-
 // Create new product
-router.post('/', auth, upload.single('image'), createProduct);
- 
+router.post("/", auth, upload.single("image"), createProduct);
+
 // Get all products
-router.get('/', getProducts);
+router.get("/", getProducts);
 
 // ✅ NEW: Search products by query (must come before /:id)
-router.get('/search', searchProducts);
+router.get("/search", searchProducts);
 
 // Get products by category
-router.get('/category/:categoryName', getProductsByCategory);
+router.get("/category/:categoryName", getProductsByCategory);
 
 // Get single product by id
-router.get('/:id', getProductById);
+router.get("/user/:sellerId", getProductsBySeller);
+router.get("/:id", getProductById);
 
 // Update a product
-router.put('/:id', auth, updateProduct);
+router.put("/:id", auth, upload.single("image"), updateProduct);
 
 // Delete a product
-router.delete('/:id', auth, deleteProduct);
+router.delete("/:id", auth, deleteProduct);
 
 module.exports = router;

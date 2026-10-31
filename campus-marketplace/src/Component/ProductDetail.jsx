@@ -1,207 +1,162 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import productService from '../services/productService';
-import AddToCartButton from '../Component/Cart/AddToCartButton';
-
-// Helper function to decode JWT token
-const decodeJwtToken = (token) => {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-    return JSON.parse(jsonPayload);
-  } catch (error) {
-    console.error('Error decoding JWT token:', error);
-    return null;
-  }
-};
-
-function ProductDetail() {
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import productService from "../services/productService";
+import authService from "../services/authService";
+import AddToCartButton from "./Cart/AddToCartButton";
+import Icon from "./Icon";
+import { FALLBACK_IMAGE } from "../api/config";
+export default function ProductDetail() {
   const { productId } = useParams();
   const navigate = useNavigate();
-
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [currentUserId, setCurrentUserId] = useState(null);
-
+  const [state, setState] = useState({
+    loading: true,
+    product: null,
+    error: "",
+  });
+  const [attempt, setAttempt] = useState(0);
+  const [deleting, setDeleting] = useState(false);
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        setLoading(true);
-        const fetchedProduct = await productService.getProductById(productId);
-        setProduct(fetchedProduct);
-        setError(null);
-      } catch (err) {
-        setError('Failed to load product details.');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
+    let active = true;
+    setState({ loading: true, product: null, error: "" });
+    productService
+      .getProductById(productId)
+      .then((product) => {
+        if (active) setState({ loading: false, product, error: "" });
+      })
+      .catch((err) => {
+        if (active)
+          setState({ loading: false, product: null, error: err.message });
+      });
+    return () => {
+      active = false;
     };
-
-    const token = localStorage.getItem('token');
-    if (token) {
-      const decodedToken = decodeJwtToken(token);
-      if (decodedToken && decodedToken.id) {
-        setCurrentUserId(decodedToken.id);
-      }
-    }
-
-    if (productId) {
-      fetchProduct();
-    }
-  }, [productId]);
-
-  const handleContactSeller = () => {
-    if(!product) return;
-    alert(`Contacting seller: ${product.seller?.name || 'N/A'}\nEmail: ${product.seller?.email || 'N/A'}\nContact: ${product.contact || 'N/A'}`);
-  };
-
-  const handleGoBack = () => {
-    navigate(-1);
-  };
-
-  const handleEdit = () => {
-    navigate(`/sell?edit=${productId}`);
-  };
-
-  const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      try {
-        await productService.deleteProduct(productId);
-        alert('Product deleted successfully!');
-        navigate('/products'); // Navigate to products list after deletion
-      } catch (err) {
-        setError('Failed to delete product.');
-        console.error(err);
-        alert(err.message || 'Failed to delete product.');
-      }
-    }
-  };
-  
-  if (loading) {
+  }, [productId, attempt]);
+  if (state.loading)
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: '80vh' }}>
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
+      <main className="site-width detail-page">
+        <div className="listing-skeleton detail-skeleton" role="status">
+          <div />
+          <span>Loading item…</span>
         </div>
-      </div>
+      </main>
     );
-  }
-
-  if (error || !product) {
+  if (!state.product)
     return (
-      <div className="container py-5 text-center">
-        <h2 className="text-danger">Error: {error || 'Product not found'}</h2>
-        <button onClick={handleGoBack} className="btn btn-primary mt-3">Go Back</button>
-      </div>
-    );
-  }
-
-  const imageUrl = product?.imageUrl || '/images/default-product.jpg';
-
-  // Check if the current user is the owner of the product
-  const isOwner = currentUserId && product.seller && product.seller._id === currentUserId;
-
-  return (
-    <div className="container-fluid py-5 bg-light">
-      <div className="container">
-        <button 
-          onClick={handleGoBack}
-          className="btn btn-outline-secondary mb-4"
+      <main className="site-width collection-message" role="alert">
+        <h1>This find isn't available right now.</h1>
+        <p>{state.error}</p>
+        <button
+          className="button button-dark"
+          onClick={() => setAttempt((x) => x + 1)}
         >
-          ← Back
+          Try again
         </button>
-
-        <div className="card shadow-lg">
-          <div className="row g-0">
-            <div className="col-md-6">
-              <img 
-                src={imageUrl} 
-                alt={product?.name} // Use optional chaining
-                className="img-fluid rounded-start h-100"
-                style={{ objectFit: 'cover', minHeight: '500px' }}
-                loading="lazy"
-                onError={(e) => { 
-                  if (e.target.src !== '/images/default-product.jpg') { // Prevent endless loop if default also fails
-                    e.target.onerror = null; // Prevent infinite loop
-                    e.target.src='/images/default-product.jpg'; 
-                  }
-                }}
-              />
-            </div>
-            
-            <div className="col-md-6">
-              <div className="card-body p-4">
-                <h1 className="h2 fw-bold text-dark mb-3">{product?.name}</h1> {/* Use optional chaining */}
-                <p className="h3 text-primary mb-4">Rs. {product?.price}</p> {/* Use optional chaining */}
-                
-                <div className="mb-4">
-                  <AddToCartButton 
-                    product={product}
-                    size="lg"
-                    showQuantity={true}
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <h5 className="fw-bold mb-3">Product Details</h5>
-                  <div className="row">
-                    <div className="col-6 mb-2">
-                      <strong>Category:</strong> 
-                      <span className="text-capitalize"> {product?.category}</span> {/* Use optional chaining */}
-                    </div>
-                    <div className="col-6 mb-2">
-                      <strong>Seller:</strong> {product?.seller?.name || 'N/A'} {/* Already has optional chaining for seller */}
-                    </div>
-                    <div className="col-6 mb-2">
-                      <strong>Contact:</strong> {product?.contact || 'N/A'} {/* Use optional chaining */}
-                    </div>
-                    <div className="col-6 mb-2">
-                      <strong>Location:</strong> {product?.location || 'N/A'} {/* Use optional chaining */}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <h5 className="fw-bold mb-3">Description</h5>
-                  <p className="text-muted">{product?.description}</p> {/* Use optional chaining */}
-                </div>
-
-                <div className="d-grid gap-2">
-                  <button 
-                    onClick={handleContactSeller}
-                    className="btn btn-primary btn-lg py-3"
-                  >
-                    📞 Contact Seller
-                  </button>
-                  {isOwner && (
-                    <>
-                      <button 
-                        onClick={handleEdit}
-                        className="btn btn-warning btn-lg py-3 mt-2"
-                      >
-                        Edit Product
-                      </button>
-                      <button 
-                        onClick={handleDelete}
-                        className="btn btn-danger btn-lg py-3 mt-2"
-                      >
-                        Delete Product
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
+        <Link className="text-link ms-3" to="/browse">
+          Explore other finds
+        </Link>
+      </main>
+    );
+  const product = state.product;
+  const user = authService.getCurrentUser();
+  const owner =
+    String(product.seller?._id || product.seller) ===
+    String(user?.id || user?._id);
+  const remove = async () => {
+    if (!window.confirm("Delete this listing permanently?")) return;
+    setDeleting(true);
+    try {
+      await productService.deleteProduct(productId);
+      navigate("/profile");
+    } catch (err) {
+      setState((s) => ({ ...s, error: err.message }));
+    } finally {
+      setDeleting(false);
+    }
+  };
+  return (
+    <main className="site-width detail-page">
+      <div className="breadcrumbs">
+        <Link to="/browse">All finds</Link>
+        <span>/</span>
+        <Link to={`/category/${product.category}`}>{product.category}</Link>
+        <span>/</span>
+        <span>{product.name}</span>
+      </div>
+      <div className="detail-grid">
+        <div className="detail-image">
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = FALLBACK_IMAGE;
+            }}
+          />
+        </div>
+        <section className="detail-copy">
+          <span className="eyebrow">A GOOD FIND, A NEW CHAPTER</span>
+          <h1>{product.name}</h1>
+          <p className="detail-price">
+            Rs. {Number(product.price).toLocaleString("en-PK")}
+          </p>
+          <p className="detail-description">
+            {product.description ||
+              "Ask the seller for more details about this item."}
+          </p>
+          <div className="seller-box">
+            <span className="seller-avatar">
+              <Icon name="user" size={25} />
+            </span>
+            <div>
+              <small>LISTED BY</small>
+              <strong>{product.seller?.name || "Campus seller"}</strong>
+              {product.location && (
+                <span>
+                  <Icon name="pin" size={14} /> {product.location}
+                </span>
+              )}
             </div>
           </div>
-        </div>
+          {state.error && (
+            <div role="alert" className="alert alert-danger">
+              {state.error}
+            </div>
+          )}
+          <AddToCartButton product={product} showQuantity size="lg" />
+          <details className="seller-contact">
+            <summary>
+              Contact the seller <Icon name="arrow" />
+            </summary>
+            <p>{product.contact || "No phone number provided."}</p>
+            {product.seller?.email && (
+              <a href={`mailto:${product.seller.email}`}>
+                {product.seller.email}
+              </a>
+            )}
+          </details>
+          {owner && (
+            <div className="owner-actions">
+              <Link
+                className="button button-outline"
+                to={`/sell?edit=${productId}`}
+              >
+                Edit listing
+              </Link>
+              <button
+                className="text-button text-danger"
+                disabled={deleting}
+                onClick={remove}
+              >
+                {deleting ? "Deleting…" : "Delete listing"}
+              </button>
+            </div>
+          )}
+          <p className="safety-note">
+            <Icon name="shield" size={20} /> Meet in a public campus space.
+            Inspect the item before making a payment.
+          </p>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }
-
-export default ProductDetail;

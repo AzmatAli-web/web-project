@@ -1,18 +1,23 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import userService from '../services/userService'; // For profile updates and user data
-import ProfileForm from '../Component/Profile/ProfileForm';
-import UserProducts from '../Component/Profile/UserProducts';
+import authService from "../services/authService";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import userService from "../services/userService"; // For profile updates and user data
+import ProfileForm from "../Component/Profile/ProfileForm";
+import UserProducts from "../Component/Profile/UserProducts";
 
 function Profile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('profile'); // 'profile' or 'products'
+  const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState("profile"); // 'profile' or 'products'
   const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!authService.isAuthenticated()) {
+      navigate("/login");
+      return;
+    }
     fetchUserProfile();
   }, []);
 
@@ -22,12 +27,15 @@ function Profile() {
       const userData = await userService.getProfile();
       setUser(userData);
     } catch (error) {
-      setError('Failed to load profile');
-      console.error('Profile error:', error);
-      
+      setError(error.message || "Failed to load profile");
+      console.error("Profile error:", error);
+
       // Redirect to login if not authenticated
-      if (error.message && (error.message.includes('token') || error.message.includes('auth'))) {
-        navigate('/login');
+      if (
+        error.message &&
+        (error.message.includes("token") || error.message.includes("auth"))
+      ) {
+        navigate("/login");
       }
     } finally {
       setLoading(false);
@@ -38,44 +46,50 @@ function Profile() {
     try {
       const response = await userService.updateProfile(updatedData);
       setUser(response.user);
+      localStorage.setItem("user", JSON.stringify(response.user));
+      window.dispatchEvent(new Event("auth-change"));
       return { success: true, message: response.message };
     } catch (error) {
-      return { success: false, message: error.message || 'Failed to update profile' };
+      return {
+        success: false,
+        message: error.message || "Failed to update profile",
+      };
     }
   };
 
   const handleDeleteAccount = async () => {
     // First confirmation dialog
     const confirmed = window.confirm(
-      'Are you sure you want to delete your account? This action cannot be undone.'
+      "Are you sure you want to delete your account? This action cannot be undone.",
     );
-    
+
     if (!confirmed) return;
 
     // Second confirmation to prevent accidental deletion
     const doubleConfirmed = window.confirm(
-      'This will permanently delete all your data. Please confirm again.'
+      "This will permanently delete all your data. Please confirm again.",
     );
-    
+
     if (!doubleConfirmed) return;
 
     setDeleting(true);
     try {
       // Call backend API to delete account
       await userService.deleteAccount();
-      
+
       // Clear localStorage
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
-      
+      authService.logout();
+
       // Show success message
-      alert('Your account has been successfully deleted.');
-      
+      alert("Your account has been successfully deleted.");
+
       // Redirect to home page
-      navigate('/');
+      navigate("/");
     } catch (error) {
-      console.error('Error deleting account:', error);
-      alert('Failed to delete account: ' + (error.message || 'Please try again'));
+      console.error("Error deleting account:", error);
+      alert(
+        "Failed to delete account: " + (error.message || "Please try again"),
+      );
       setDeleting(false);
     }
   };
@@ -119,17 +133,19 @@ function Profile() {
           <div className="card">
             <div className="card-body text-center">
               <div className="mb-3">
-                <div 
+                <div
                   className="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center text-white"
-                  style={{ width: '80px', height: '80px', fontSize: '2rem' }}
+                  style={{ width: "80px", height: "80px", fontSize: "2rem" }}
                 >
                   {user?.name?.charAt(0).toUpperCase()}
                 </div>
               </div>
               <h5 className="card-title">{user?.name}</h5>
               <p className="text-muted">{user?.email}</p>
-              <div className={`badge ${user?.status === 'approved' ? 'bg-success' : 'bg-warning'}`}>
-                {user?.status || 'pending'}
+              <div
+                className={`badge ${user?.status === "approved" ? "bg-success" : "bg-warning"}`}
+              >
+                {user?.status || "pending"}
               </div>
             </div>
           </div>
@@ -139,17 +155,19 @@ function Profile() {
             <div className="card-body p-0">
               <button
                 className={`btn w-100 text-start p-3 border-0 ${
-                  activeTab === 'profile' ? 'bg-light text-primary' : 'bg-white'
+                  activeTab === "profile" ? "bg-light text-primary" : "bg-white"
                 }`}
-                onClick={() => setActiveTab('profile')}
+                onClick={() => setActiveTab("profile")}
               >
                 📝 Edit Profile
               </button>
               <button
                 className={`btn w-100 text-start p-3 border-0 ${
-                  activeTab === 'products' ? 'bg-light text-primary' : 'bg-white'
+                  activeTab === "products"
+                    ? "bg-light text-primary"
+                    : "bg-white"
                 }`}
-                onClick={() => setActiveTab('products')}
+                onClick={() => setActiveTab("products")}
               >
                 🛍️ My Products
               </button>
@@ -161,17 +179,17 @@ function Profile() {
           {/* Main Content */}
           <div className="card">
             <div className="card-body">
-              {activeTab === 'profile' && (
-                <ProfileForm 
-                  user={user} 
+              {activeTab === "profile" && (
+                <ProfileForm
+                  user={user}
                   onUpdate={handleUpdateProfile}
                   onDeleteAccount={handleDeleteAccount}
                   isDeleting={deleting}
                 />
               )}
-              
-              {activeTab === 'products' && (
-                <UserProducts userId={user?.id} />
+
+              {activeTab === "products" && (
+                <UserProducts userId={user?._id || user?.id} />
               )}
             </div>
           </div>

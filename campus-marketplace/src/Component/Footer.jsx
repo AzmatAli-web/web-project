@@ -1,35 +1,50 @@
- 
-
-// Layout-only footer. Fill in links and content later.
-function Footer() {
+import { Link } from "react-router-dom";
+import Icon from "./Icon";
+export default function Footer() {
   return (
-    <footer className="bg-secondary text-white mt-5">
-      <div className="container-fluid py-4">
-        <div className="row">
-          <div className="col-12 col-md-4 mb-3 mb-md-0">
-            <h6 className="fw-bold">CampusMarketplace</h6>
-            <p className="small text-white-50">A student-first marketplace to buy and sell textbooks, gadgets and campus essentials.</p>
+    <footer className="site-footer">
+      <div className="site-width">
+        <div className="footer-top">
+          <div>
+            <Link to="/" className="brand">
+              <span className="brand-mark">
+                <Icon name="bag" size={23} />
+              </span>
+              <span>
+                campus<span className="brand-light">market.</span>
+              </span>
+            </Link>
+            <p>
+              Good things deserve another chapter.
+              <br />A marketplace made for campus life.
+            </p>
           </div>
-
-          <div className="col-6 col-md-4">
-            <h6 className="fw-bold">Quick Links</h6>
-            <ul className="list-unstyled small">
-              <li><a href="#" className="text-white-50">Home</a></li>
-              <li><a href="./Sell" className="text-white-50">Post an Item</a></li>
-              <li><a href="#" className="text-white-50">Help</a></li>
-            </ul>
+          <div>
+            <span className="eyebrow">THE MARKETPLACE</span>
+            <Link to="/browse">Explore all finds</Link>
+            <Link to="/sell">Sell an item</Link>
+            <Link to="/profile">Your account</Link>
           </div>
-
-          <div className="col-6 col-md-4">
-            <h6 className="fw-bold">Contact</h6>
-            <p className="small mb-1 text-white-50">email@campusmarketplace.edu</p>
-            <p className="small text-white-50">+92 300 0000000</p>
+          <div>
+            <span className="eyebrow">GOOD TO KNOW</span>
+            <Link to="/about">Our story</Link>
+            <Link to="/contact">Help & safe trading</Link>
+            <Link to="/signup">Join the community</Link>
           </div>
+          <span className="footer-message">
+            Less waste.
+            <br />
+            More <em>possibility.</em>
+          </span>
         </div>
-        <div className="text-center mt-3 small text-white-50">© 2025 CampusMarketplace</div>
+        <div className="footer-bottom">
+          <span>© {new Date().getFullYear()} Campus Marketplace</span>
+          <span>
+            Made for students. Made for a second chapter.{" "}
+            <Icon name="leaf" size={16} />
+          </span>
+        </div>
       </div>
     </footer>
   );
 }
-
-export default Footer;
