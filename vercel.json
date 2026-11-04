@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "installCommand": "npm --prefix campus-marketplace ci && npm --prefix Backend ci",
+  "buildCommand": "npm --prefix campus-marketplace run build",
+  "outputDirectory": "campus-marketplace/dist",
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "Backend/uploads/**"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/uploads/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/((?!assets/|images/|images2/).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "framework": null
+}

@@ -1,37 +1,45 @@
-import { useState } from 'react';
-import { useCart } from '../../context/CartContext';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useCart } from "../../context/CartContext";
+import { useNavigate } from "react-router-dom";
 
-function AddToCartButton({ product, size = 'md', showQuantity = false }) {
+function AddToCartButton({ product, size = "md", showQuantity = false }) {
   const [loading, setLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  const [message, setMessage] = useState('');
-  const { addToCart, getCartCount } = useCart();
+  const [message, setMessage] = useState("");
+  const { addToCart } = useCart();
   const navigate = useNavigate();
 
   const handleAddToCart = async () => {
     if (!product || !product._id) {
-      setMessage('Invalid product');
+      setMessage("Invalid product");
       return;
     }
 
+    if (!localStorage.getItem("token")) {
+      navigate("/login");
+      return;
+    }
     setLoading(true);
-    setMessage('');
+    setMessage("");
 
     try {
       await addToCart(product._id, quantity);
-      setMessage('✅ Added to cart!');
-      
+      setMessage("✅ Added to cart!");
+
       // Clear message after 2 seconds
-      setTimeout(() => setMessage(''), 2000);
+      setTimeout(() => setMessage(""), 2000);
     } catch (error) {
-      console.error('Error adding to cart:', error);
-      
-      if (error.includes('auth') || error.includes('token')) {
-        setMessage('Please login to add to cart');
-        setTimeout(() => navigate('/login'), 1500);
+      console.error("Error adding to cart:", error);
+
+      const message =
+        typeof error === "string"
+          ? error
+          : error.message || "Could not add this item";
+      if (error.response?.status === 401 || /auth|token/i.test(message)) {
+        setMessage("Please login to add to cart");
+        setTimeout(() => navigate("/login"), 1500);
       } else {
-        setMessage(`❌ ${error}`);
+        setMessage(message);
       }
     } finally {
       setLoading(false);
@@ -39,19 +47,22 @@ function AddToCartButton({ product, size = 'md', showQuantity = false }) {
   };
 
   const buttonSizes = {
-    sm: 'btn-sm',
-    md: '',
-    lg: 'btn-lg'
+    sm: "btn-sm",
+    md: "",
+    lg: "btn-lg",
   };
 
-  const buttonClass = `btn btn-primary ${buttonSizes[size]} ${loading ? 'disabled' : ''}`;
+  const buttonClass = `btn btn-primary ${buttonSizes[size]} ${loading ? "disabled" : ""}`;
 
   return (
     <div className="add-to-cart-wrapper">
       {showQuantity && (
         <div className="mb-2">
           <label className="form-label small">Quantity:</label>
-          <div className="input-group input-group-sm" style={{ maxWidth: '120px' }}>
+          <div
+            className="input-group input-group-sm"
+            style={{ maxWidth: "120px" }}
+          >
             <button
               className="btn btn-outline-secondary"
               type="button"
@@ -64,7 +75,9 @@ function AddToCartButton({ product, size = 'md', showQuantity = false }) {
               type="number"
               className="form-control text-center"
               value={quantity}
-              onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+              onChange={(e) =>
+                setQuantity(Math.max(1, parseInt(e.target.value) || 1))
+              }
               min="1"
             />
             <button
@@ -82,16 +95,19 @@ function AddToCartButton({ product, size = 'md', showQuantity = false }) {
         className={buttonClass}
         onClick={handleAddToCart}
         disabled={loading || product?.isAvailable === false}
-        style={{ minWidth: '140px' }}
+        style={{ minWidth: "140px" }}
       >
         {loading ? (
           <>
-            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+            <span
+              className="spinner-border spinner-border-sm me-2"
+              role="status"
+            ></span>
             Adding...
           </>
         ) : (
           <>
-            🛒 Add to Cart
+            Add to bag
             {!showQuantity && quantity > 1 && ` (${quantity})`}
           </>
         )}
@@ -104,7 +120,10 @@ function AddToCartButton({ product, size = 'md', showQuantity = false }) {
       )}
 
       {message && (
-        <div className={`mt-2 small ${message.includes('✅') ? 'text-success' : 'text-danger'}`}>
+        <div
+          role="status"
+          className={`mt-2 small ${message.includes("✅") ? "text-success" : "text-danger"}`}
+        >
           {message}
         </div>
       )}

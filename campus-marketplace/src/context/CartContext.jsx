@@ -1,14 +1,20 @@
-import { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
-import cartService from '../services/cartService';
+import {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useCallback,
+} from "react";
+import cartService from "../services/cartService";
 
 const CartContext = createContext();
 
 // Cart actions
 const CART_ACTIONS = {
-  SET_CART: 'SET_CART',
-  SET_LOADING: 'SET_LOADING',
-  SET_ERROR: 'SET_ERROR',
-  CLEAR_CART_LOCAL: 'CLEAR_CART_LOCAL'
+  SET_CART: "SET_CART",
+  SET_LOADING: "SET_LOADING",
+  SET_ERROR: "SET_ERROR",
+  CLEAR_CART_LOCAL: "CLEAR_CART_LOCAL",
 };
 
 // Cart reducer
@@ -19,30 +25,30 @@ const cartReducer = (state, action) => {
         ...state,
         cart: action.payload,
         loading: false,
-        error: null
+        error: null,
       };
-    
+
     case CART_ACTIONS.SET_LOADING:
       return {
         ...state,
-        loading: action.payload
+        loading: action.payload,
       };
-    
+
     case CART_ACTIONS.SET_ERROR:
       return {
         ...state,
         loading: false,
-        error: action.payload
+        error: action.payload,
       };
-    
+
     case CART_ACTIONS.CLEAR_CART_LOCAL:
       return {
         ...state,
         cart: { items: [], totalAmount: 0 },
         loading: false,
-        error: null
+        error: null,
       };
-    
+
     default:
       return state;
   }
@@ -51,7 +57,7 @@ const cartReducer = (state, action) => {
 const initialState = {
   cart: { items: [], totalAmount: 0 },
   loading: false,
-  error: null
+  error: null,
 };
 
 export const CartProvider = ({ children }) => {
@@ -60,7 +66,7 @@ export const CartProvider = ({ children }) => {
   // ✅ FIXED: Only fetch cart if user is authenticated
   const fetchCart = useCallback(async () => {
     // Check if user is logged in
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
       // No token, don't fetch cart
       dispatch({ type: CART_ACTIONS.CLEAR_CART_LOCAL });
@@ -70,28 +76,33 @@ export const CartProvider = ({ children }) => {
     try {
       dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
       const cart = await cartService.getCart();
+      if (localStorage.getItem("token") !== token) return;
       dispatch({ type: CART_ACTIONS.SET_CART, payload: cart });
     } catch (error) {
-      console.error('Cart fetch error:', error);
+      if (localStorage.getItem("token") !== token) return;
       // If 401, user is not authenticated
       if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
         dispatch({ type: CART_ACTIONS.CLEAR_CART_LOCAL });
       } else {
-        dispatch({ type: CART_ACTIONS.SET_ERROR, payload: error.message });
+        dispatch({
+          type: CART_ACTIONS.SET_ERROR,
+          payload: error.message || String(error),
+        });
       }
     }
   }, []);
 
-  // ✅ FIXED: Load cart only once on mount, and only if authenticated
   useEffect(() => {
-    // Check if token exists before fetching
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetchCart();
-    }
-  }, []); // Empty dependency array - run only once
+    fetchCart();
+    window.addEventListener("auth-change", fetchCart);
+    window.addEventListener("storage", fetchCart);
+    return () => {
+      window.removeEventListener("auth-change", fetchCart);
+      window.removeEventListener("storage", fetchCart);
+    };
+  }, [fetchCart]);
 
   // Memoize addToCart
   const addToCart = useCallback(async (productId, quantity = 1) => {
@@ -100,7 +111,10 @@ export const CartProvider = ({ children }) => {
       const updatedCart = await cartService.addToCart(productId, quantity);
       dispatch({ type: CART_ACTIONS.SET_CART, payload: updatedCart });
     } catch (error) {
-      dispatch({ type: CART_ACTIONS.SET_ERROR, payload: error.message });
+      dispatch({
+        type: CART_ACTIONS.SET_ERROR,
+        payload: error.message || String(error),
+      });
       throw error;
     }
   }, []);
@@ -112,7 +126,10 @@ export const CartProvider = ({ children }) => {
       const updatedCart = await cartService.removeFromCart(productId);
       dispatch({ type: CART_ACTIONS.SET_CART, payload: updatedCart });
     } catch (error) {
-      dispatch({ type: CART_ACTIONS.SET_ERROR, payload: error.message });
+      dispatch({
+        type: CART_ACTIONS.SET_ERROR,
+        payload: error.message || String(error),
+      });
       throw error;
     }
   }, []); // Empty dependency array means this function is created once
@@ -123,7 +140,10 @@ export const CartProvider = ({ children }) => {
       await cartService.clearCart();
       dispatch({ type: CART_ACTIONS.CLEAR_CART_LOCAL }); // Dispatch local clear
     } catch (error) {
-      dispatch({ type: CART_ACTIONS.SET_ERROR, payload: error.message });
+      dispatch({
+        type: CART_ACTIONS.SET_ERROR,
+        payload: error.message || String(error),
+      });
       throw error;
     }
   }, []); // Empty dependency array means this function is created once
@@ -138,8 +158,8 @@ export const CartProvider = ({ children }) => {
     }
     return state.cart.items.reduce((total, item) => {
       // Ensure product and price exist to prevent errors
-      if (item.product && typeof item.product.price === 'number') {
-        return total + (item.product.price * item.quantity);
+      if (item.product && typeof item.product.price === "number") {
+        return total + item.product.price * item.quantity;
       }
       return total;
     }, 0);
@@ -154,20 +174,16 @@ export const CartProvider = ({ children }) => {
     clearCart,
     fetchCart,
     getCartCount,
-    getCartTotal
+    getCartTotal,
   };
 
-  return (
-    <CartContext.Provider value={value}>
-      {children}
-    </CartContext.Provider>
-  );
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
 
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
-    throw new Error('useCart must be used within a CartProvider');
+    throw new Error("useCart must be used within a CartProvider");
   }
   return context;
 };

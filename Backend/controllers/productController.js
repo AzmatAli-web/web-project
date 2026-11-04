@@ -1,26 +1,14 @@
-const Product = require('../models/product');
-const path = require('path');
-
-// ✅ Helper function to add image URLs
-const addImageUrls = (product) => {
-  if (product.image) {
-    // If image doesn't start with http, prepend /uploads/
-    if (!product.image.startsWith('http')) {
-      product.imageUrl = `/uploads/${product.image}`;
-    } else {
-      product.imageUrl = product.image;
-    }
-  } else {
-    product.imageUrl = null;
-  }
-  return product;
-};
+const { saveUpload } = require("../utils/imageStorage");
+const Product = require("../models/product");
+const { addImageUrls } = require("../utils/productImage");
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 // ✅ NEW: Search products by query
 const searchProducts = async (req, res) => {
   try {
-    const { q } = req.query;
-    
+    const q =
+      typeof req.query.q === "string" ? req.query.q.trim().slice(0, 200) : "";
+
     if (!q || !q.trim()) {
       return res.json([]);
     }
@@ -28,53 +16,60 @@ const searchProducts = async (req, res) => {
     // Search in name, description, and category
     const query = {
       $or: [
-        { name: { $regex: q, $options: 'i' } },
-        { description: { $regex: q, $options: 'i' } },
-        { category: { $regex: q, $options: 'i' } }
-      ]
+        { name: { $regex: escapeRegex(q), $options: "i" } },
+        { description: { $regex: escapeRegex(q), $options: "i" } },
+        { category: { $regex: escapeRegex(q), $options: "i" } },
+      ],
     };
 
     const products = await Product.find(query)
       .sort({ createdAt: -1 })
-      .populate('seller', 'name email')
+      .populate("seller", "name email")
       .lean();
 
     const productsWithUrls = products.map(addImageUrls);
 
     res.json(productsWithUrls);
   } catch (error) {
-    console.error('Error searching products:', error);
-    res.status(500).json({ message: 'Server error during search' });
+    console.error("Error searching products:", error);
+    res.status(500).json({ message: "Server error during search" });
   }
 };
 
 // Get all products
 const getProducts = async (req, res) => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 }).populate('seller', 'name email').lean();
+    const products = await Product.find()
+      .sort({ createdAt: -1 })
+      .populate("seller", "name email")
+      .lean();
 
     const productsWithUrls = products.map(addImageUrls);
 
     res.json(productsWithUrls);
   } catch (error) {
-    console.error('Error fetching products:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error fetching products:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
 // Get single product by ID
 const getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).populate('seller', 'name email').lean();
+    const product = await Product.findById(req.params.id)
+      .populate("seller", "name email")
+      .lean();
     if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
+      return res.status(404).json({ message: "Product not found" });
     }
 
     const productWithUrl = addImageUrls(product);
     res.json(productWithUrl);
   } catch (error) {
-    console.error('Error fetching product:', error);
-    res.status(500).json({ message: 'Server error' });
+    if (error.name === "CastError")
+      return res.status(400).json({ message: "Invalid product ID" });
+    console.error("Error fetching product:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -82,29 +77,36 @@ const getProductById = async (req, res) => {
 const getProductsByCategory = async (req, res) => {
   try {
     const { categoryName } = req.params;
-    const products = await Product.find({ category: { $regex: new RegExp(`^${categoryName}$`, 'i') } }).populate('seller', 'name email').lean();
+    const products = await Product.find({
+      category: { $regex: new RegExp(`^${escapeRegex(categoryName)}$`, "i") },
+    })
+      .populate("seller", "name email")
+      .lean();
 
     const productsWithUrls = products.map(addImageUrls);
 
     res.json(productsWithUrls);
   } catch (error) {
-    console.error('Error fetching products by category:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error fetching products by category:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
 // Get products by seller ID
 const getProductsBySeller = async (req, res) => {
   try {
-    const sellerId = req.user.id;
-    const products = await Product.find({ seller: sellerId }).sort({ createdAt: -1 }).populate('seller', 'name email').lean();
-    
+    const sellerId = req.params.sellerId || req.user.id;
+    const products = await Product.find({ seller: sellerId })
+      .sort({ createdAt: -1 })
+      .populate("seller", "name email")
+      .lean();
+
     const productsWithUrls = products.map(addImageUrls);
-    
+
     res.json(productsWithUrls);
   } catch (error) {
-    console.error('Error fetching products by seller:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error fetching products by seller:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -113,80 +115,107 @@ const createProduct = async (req, res) => {
   try {
     const { name, price, description, category, contact, location } = req.body;
     // Get image path if file was uploaded (store only filename, not full path)
-    const imagePath = req.file ? req.file.filename : null;
+    const imagePath = await saveUpload(req.file);
 
-    if (!name || !price || !category) {
-      return res.status(400).json({ message: 'Missing required fields: name, price, category' });
+    if (
+      !name?.trim() ||
+      !category?.trim() ||
+      price === undefined ||
+      price === "" ||
+      !Number.isFinite(Number(price)) ||
+      Number(price) < 0
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Missing required fields: name, price, category" });
     }
 
     const product = new Product({
       name,
       price: Number(price),
-      description: description || '',
+      description: description || "",
       category,
       image: imagePath, // Save the image path
-      contact: contact || '',
-      location: location || '',
-      seller: req.user?.id || null
+      contact: contact || "",
+      location: location || "",
+      seller: req.user?.id || null,
     });
 
     await product.save();
-    await product.populate('seller', 'name email');
+    await product.populate("seller", "name email");
 
     const productObj = product.toObject();
     const productWithUrl = addImageUrls(productObj);
 
     res.status(201).json({
-      message: 'Product created successfully',
-      product: productWithUrl
+      message: "Product created successfully",
+      product: productWithUrl,
     });
-
   } catch (error) {
-    console.error('Error creating product:', error);
-    res.status(500).json({ message: 'Server error creating product' });
+    console.error("Error creating product:", error);
+    res.status(500).json({ message: "Server error creating product" });
   }
 };
 
 // Update product
 const updateProduct = async (req, res) => {
   try {
-    const { name, price, description, category, contact, location, status } = req.body;
+    const { name, price, description, category, contact, location, status } =
+      req.body;
     const product = await Product.findById(req.params.id);
 
     if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
+      return res.status(404).json({ message: "Product not found" });
     }
 
-    if (!product.seller || !product.seller.equals(req.user.id)) {
-      return res.status(403).json({ message: 'Not authorized to update this product' });
+    if (
+      (!product.seller || !product.seller.equals(req.user.id)) &&
+      req.user.role !== "admin"
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to update this product" });
     }
 
+    if (
+      price !== undefined &&
+      (price === "" || !Number.isFinite(Number(price)) || Number(price) < 0)
+    )
+      return res
+        .status(400)
+        .json({ message: "Price must be a non-negative number" });
+
+    if (req.body.removeImage === "true") product.image = null;
     // Handle image update
     if (req.file) {
-      product.image = req.file.filename;
+      product.image = await saveUpload(req.file);
     }
 
     product.name = name || product.name;
-    product.price = price || product.price;
+    product.price = price !== undefined ? Number(price) : product.price;
     product.description = description || product.description;
     product.category = category || product.category;
     product.contact = contact || product.contact;
     product.location = location || product.location;
+    if (status && req.user.role !== "admin")
+      return res
+        .status(403)
+        .json({ message: "Only admins can change listing status" });
     product.status = status || product.status;
 
     await product.save();
-    await product.populate('seller', 'name email');
+    await product.populate("seller", "name email");
 
     const productObj = product.toObject();
     const productWithUrl = addImageUrls(productObj);
 
     res.json({
-      message: 'Product updated successfully',
-      product: productWithUrl
+      message: "Product updated successfully",
+      product: productWithUrl,
     });
   } catch (error) {
-    console.error('Error updating product:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error updating product:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -196,15 +225,23 @@ const deleteProduct = async (req, res) => {
     const product = await Product.findById(req.params.id);
 
     if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
+      return res.status(404).json({ message: "Product not found" });
     }
 
+    if (
+      String(product.seller) !== String(req.user.id) &&
+      req.user.role !== "admin"
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to delete this product" });
+    }
     await product.deleteOne();
 
-    res.json({ message: 'Product deleted successfully' });
+    res.json({ message: "Product deleted successfully" });
   } catch (error) {
-    console.error('Error deleting product:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error deleting product:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 

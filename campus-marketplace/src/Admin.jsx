@@ -1,65 +1,54 @@
-// AdminSect/Admin.jsx
-import React, { useState } from 'react';
-import AdminDashboard from './AdminSect/AdminDashboard';
-import AdminAnalytics from './AdminSect/AdminAnalytics';
-import AdminReports from './AdminSect/AdminReports';
-import ManageUsers from './AdminSect/ManageUsers';
-import ManageListings from './AdminSect/ManageListings';
-
-const Admin = () => {
-  const [activePage, setActivePage] = useState('dashboard');
-
-  const pages = {
-    dashboard: <AdminDashboard />,
-    analytics: <AdminAnalytics />,
-    reports: <AdminReports />,
-    users: <ManageUsers />,
-    listings: <ManageListings />,
-  };
-
-  const menuItems = [
-    { key: 'dashboard', icon: '📊', label: 'Dashboard' },
-    { key: 'analytics', icon: '📈', label: 'Analytics' },
-    { key: 'reports', icon: '📋', label: 'Reports' },
-    { key: 'users', icon: '👥', label: 'Manage Users' },
-    { key: 'listings', icon: '🏠', label: 'Manage Listings' },
-  ];
-
+import { useState } from "react";
+import { Navigate, Link } from "react-router-dom";
+import authService from "./services/authService";
+import AdminDashboard from "./AdminSect/AdminDashboard";
+import ManageUsers from "./AdminSect/ManageUsers";
+import ManageListings from "./AdminSect/ManageListings";
+export default function Admin() {
+  const [tab, setTab] = useState("overview");
+  const user = authService.getCurrentUser();
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== "admin")
+    return (
+      <main className="site-width collection-message">
+        <h1>Admin access required.</h1>
+        <Link to="/browse" className="button button-dark">
+          Explore the marketplace
+        </Link>
+      </main>
+    );
   return (
-    
-    <div className="container-fluid">
-      <div className="row">
-        {/* Sidebar */}
-        <div className="col-md-3 bg-dark text-white vh-100 p-3">
-          <h4 className="text-white mb-4">Admin Panel</h4>
-          
-          {menuItems.map(item => (
+    <main className="site-width admin-layout">
+      <aside>
+        <span className="eyebrow">MARKETPLACE ADMIN</span>
+        <h2>Control room.</h2>
+        <div className="admin-tabs">
+          {[
+            ["overview", "Overview"],
+            ["users", "Members"],
+            ["listings", "Listings"],
+          ].map(([id, label]) => (
             <button
-              key={item.key}
-              className={`btn w-100 text-start text-white mb-2 ${activePage === item.key ? 'btn-primary' : 'btn-dark'}`}
-              onClick={() => setActivePage(item.key)}
+              key={id}
+              aria-pressed={tab === id}
+              className={tab === id ? "active" : ""}
+              onClick={() => setTab(id)}
             >
-              {item.icon} {item.label}
+              {label}
+              <span>↗</span>
             </button>
           ))}
-          
-          <div className="mt-5 pt-3 border-top">
-            <button 
-              className="btn btn-outline-light w-100"
-              onClick={() => window.location.href = '/'}
-            >
-              ← Back to Site
-            </button>
-          </div>
         </div>
-
-        {/* Main Content */}
-        <div className="col-md-9 p-4">
-          {pages[activePage]}
-        </div>
+      </aside>
+      <div className="admin-content">
+        {tab === "overview" ? (
+          <AdminDashboard />
+        ) : tab === "users" ? (
+          <ManageUsers />
+        ) : (
+          <ManageListings />
+        )}
       </div>
-    </div>
+    </main>
   );
-};
-
-export default Admin;
+}

@@ -1,60 +1,19 @@
-// cartService.js
-import axiosClient from '../api/axiosClient'; // Import shared client
-
+import client from "../api/axiosClient";
+import { normalizeProduct } from "../api/config";
+const normalize = (cart) => ({
+  ...cart,
+  items: (cart.items || [])
+    .filter((i) => i.product)
+    .map((i) => ({ ...i, product: normalizeProduct(i.product) })),
+});
 const cartService = {
-  getCart: async () => {
-    try {
-      const response = await axiosClient.get('/cart');
-      return response.data;
-    } catch (error) {
-      // ✅ Better error handling
-      if (error.response?.status === 401) {
-        // User not authenticated
-        console.log('User not authenticated, returning empty cart');
-        return { items: [], totalAmount: 0 };
-      }
-      throw error.response?.data?.message || 'Failed to fetch cart';
-    }
-  },
-
-  addToCart: async (productId, quantity = 1) => {
-    try {
-      const response = await axiosClient.post('/cart/add', {
-        productId,
-        quantity: parseInt(quantity)
-      });
-      return response.data;
-    } catch (error) {
-      throw error.response?.data?.message || 'Failed to add item to cart';
-    }
-  },
-
-  removeFromCart: async (productId) => {
-    try {
-      const response = await axiosClient.delete(`/cart/${productId}`);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data?.message || 'Failed to remove item from cart';
-    }
-  },
-
-  clearCart: async () => {
-    try {
-      const response = await axiosClient.delete('/cart');
-      return response.data;
-    } catch (error) {
-      throw error.response?.data?.message || 'Failed to clear cart';
-    }
-  },
-
-  createCheckoutSession: async () => {
-    try {
-      const response = await axiosClient.post('/cart/create-checkout-session');
-      return response.data;
-    } catch (error) {
-      throw error.response?.data?.message || 'Failed to create checkout session';
-    }
-  }
+  getCart: async () => normalize((await client.get("/cart")).data),
+  addToCart: async (productId, quantity = 1) =>
+    normalize((await client.post("/cart/add", { productId, quantity })).data),
+  removeFromCart: async (id) =>
+    normalize((await client.delete(`/cart/${encodeURIComponent(id)}`)).data),
+  clearCart: async () => normalize((await client.delete("/cart")).data),
+  createCheckoutSession: async () =>
+    (await client.post("/cart/create-checkout-session")).data,
 };
-
 export default cartService;

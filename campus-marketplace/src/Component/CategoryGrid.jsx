@@ -1,49 +1,71 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-
-function CategoryGrid() {
-  const navigate = useNavigate();
-
-  const categories = [
-    { id: 'books', name: 'Books', image: 'images/books.jpeg' },
-    { id: 'gadgets', name: 'Gadgets', image: '/images/laptop.jpeg' },
-    { id: 'stationery', name: 'Stationery', image: '/images/stationary.jpeg' },
-    { id: 'accessories', name: 'Accessories', image: '/images/books2.jpeg' }
-  ];
-
-  const handleCategoryClick = (categoryId) => {
-    navigate(`/category/${categoryId}`);
-  };
-
+import { Link } from "react-router-dom";
+import Icon from "./Icon";
+export const categories = [
+  {
+    id: "books",
+    name: "Books",
+    description: "Your next chapter",
+    icon: "book",
+    color: "mint",
+  },
+  {
+    id: "gadgets",
+    name: "Gadgets",
+    description: "A smarter upgrade",
+    icon: "laptop",
+    color: "lavender",
+  },
+  {
+    id: "stationery",
+    name: "Stationery",
+    description: "Make your mark",
+    icon: "pen",
+    color: "peach",
+  },
+  {
+    id: "accessories",
+    name: "Accessories",
+    description: "The little essentials",
+    icon: "headphones",
+    color: "yellow",
+  },
+];
+export default function CategoryGrid() {
   return (
-    <section className="container-fluid my-5">
-      <h2 className="h5 mb-4">Browse Categories</h2>
-      <div className="row g-4" style={{minWidth:'430px'}}>
-        {categories.map((category) => (
-          <div 
-            key={category.id}
-            className="col-6 col-md-3 col-lg-3 col-xl-3 text-center"
+    <section
+      id="categories"
+      className="site-width section-space categories-section"
+    >
+      <div className="section-heading">
+        <div>
+          <span className="eyebrow">FIND YOUR KIND OF GOOD</span>
+          <h2>A little of everything.</h2>
+        </div>
+        <Link className="text-link" to="/browse">
+          Explore all items <Icon name="arrow" />
+        </Link>
+      </div>
+      <div className="category-grid">
+        {categories.map((c, i) => (
+          <Link
+            to={`/category/${c.id}`}
+            className={`category-tile ${c.color}`}
+            key={c.id}
           >
-            <div 
-              className="card shadow-sm p-3 cursor-pointer"
-              onClick={() => handleCategoryClick(category.id)}
-              style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.55)'}
-              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              <img 
-                src={category.image} 
-                alt={category.name} 
-                className="img-fluid rounded mb-2" 
-                style={{ height: '300px', objectFit: 'cover', width: '100%' }} 
-              />
-              <h6 className="mb-0">{category.name}</h6>
+            <span className="category-index">0{i + 1}</span>
+            <span className="category-icon">
+              <Icon name={c.icon} size={38} />
+            </span>
+            <div>
+              <h3>{c.name}</h3>
+              <p>{c.description}</p>
             </div>
-          </div>
+            <span className="category-arrow">
+              <Icon name="arrow" />
+            </span>
+          </Link>
         ))}
       </div>
     </section>
   );
 }
-
-export default CategoryGrid;

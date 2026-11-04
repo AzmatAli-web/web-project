@@ -1,26 +1,34 @@
-function AuthLayout({ children, title }) 
-{
+import { Link } from "react-router-dom";
+import Icon from "./Icon";
+export default function AuthLayout({ children, title }) {
   return (
-    <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light">
-      <div className="card shadow-lg w-100" style={{ maxWidth: '300px' }}>
-        <div className="card-body p-4 p-md-5">
-          <div className="text-center mb-4">
-            <img
-              src="/src/assets/images/logo.png"
-              alt="Campus Marketplace Logo"
-              width="48"
-              height="48"
-              className="mb-2"
-              style={{ borderRadius: '20%' }}
-            />
-            <h1 className="h3 fw-bold text-primary mb-1">Campus Marketplace</h1>
-            <h2 className="h5 text-muted">{title}</h2>
-          </div>
-          {children}
-        </div>
-      </div>
-    </div>
+    <main className="site-width auth-layout">
+      <aside className="auth-story">
+        <span className="eyebrow">A LITTLE MORE COMMUNITY.</span>
+        <h1>
+          Your campus.
+          <br />
+          Full of
+          <br />
+          <em>possibility.</em>
+        </h1>
+        <p>
+          A good find, a fresh start, a second chapter.
+          <br />
+          It all starts here.
+        </p>
+        <span className="auth-flower" aria-hidden="true">
+          ✳
+        </span>
+        <Link to="/browse" className="text-link">
+          Take a look around <Icon name="arrow" />
+        </Link>
+      </aside>
+      <section className="auth-form">
+        <span className="eyebrow">WELCOME TO CAMPUSMARKET</span>
+        <h2>{title}</h2>
+        {children}
+      </section>
+    </main>
   );
 }
-
-export default AuthLayout;

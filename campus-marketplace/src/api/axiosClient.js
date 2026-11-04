@@ -1,72 +1,49 @@
-import axios from 'axios';
-
-// ✅ IMPROVED: Use environment variable, then try relative paths for dev/production
-let API_URL;
-
-// Check environment variable first
-if (import.meta.env.VITE_API_URL) {
-  API_URL = import.meta.env.VITE_API_URL;
-} 
-// In development (Vite with proxy), use relative path /api
-else if (import.meta.env.DEV) {
-  API_URL = '/api';
-}
-// In production, use relative path /api (server should serve both frontend and API)
-else {
-  API_URL = '/api';
-}
-
-console.log('🔵 API_URL configured as:', API_URL);
-
+import axios from "axios";
+import { API_URL } from "./config";
 const axiosClient = axios.create({
   baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true, // ✅ IMPORTANT: Allow cookies if needed
+  timeout: 20000,
+  headers: { Accept: "application/json" },
 });
-
-// Request interceptor - Add token to every request
-axiosClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    console.log('🔵 Request:', config.method?.toUpperCase(), config.url);
-    return config;
-  },
-  (error) => {
-    console.error('🔴 Request error:', error);
-    return Promise.reject(error);
-  }
-);
-
-// Response interceptor - Handle errors and redirects
+axiosClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  else delete config.headers.Authorization;
+  // Let the browser generate the multipart boundary for uploads.
+  if (config.data instanceof FormData) config.headers.setContentType(undefined);
+  return config;
+});
 axiosClient.interceptors.response.use(
   (response) => {
-    console.log('✅ Response:', response.status, response.config.url);
+    if (
+      typeof response.data === "string" &&
+      /<(!doctype|html)/i.test(response.data)
+    ) {
+      return Promise.reject(
+        new Error(
+          "The API returned a web page instead of data. Check the backend URL and deployment routes.",
+        ),
+      );
+    }
     return response;
   },
   (error) => {
-    console.error('🔴 Response error:', error.response?.status, error.message);
-    
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      
-      // Only redirect if we're on a protected page
-      const protectedPaths = ['/profile', '/cart', '/sell', '/admin'];
-      const currentPath = window.location.pathname;
-      
-      if (protectedPaths.some(path => currentPath.includes(path))) {
-        setTimeout(() => {
-          window.location.href = '/'; 
-        }, 100);
-      }
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.dispatchEvent(new Event("auth-change"));
     }
+    if (!error.response)
+      error.message =
+        error.code === "ECONNABORTED"
+          ? "The server took too long to respond. Please try again."
+          : "Cannot reach the marketplace server. Please try again shortly.";
+    else if (typeof error.response.data?.message === "string")
+      error.message = error.response.data.message;
+    else if (error.response.status >= 500)
+      error.message =
+        "The marketplace service is unavailable. Please try again shortly.";
     return Promise.reject(error);
-  }
+  },
 );
-
 export default axiosClient;

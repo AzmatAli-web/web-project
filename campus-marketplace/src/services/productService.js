@@ -1,121 +1,25 @@
-// productService.js - Using your existing axiosClient
-import axiosClient from '../api/axiosClient'; // Import your configured client
-
+import client from "../api/axiosClient";
+import { normalizeProduct, normalizeProducts } from "../api/config";
+const list = async (url, config) =>
+  normalizeProducts((await client.get(url, config)).data);
 const productService = {
-  // Get all products
-  getAllProducts: async () => {
-    try {
-      const response = await axiosClient.get('/products');
-      return response.data;
-    } catch (error) {
-      throw error.response?.data?.message || 'Failed to fetch products';
-    }
-  },
-
-  // Get product by ID
-  getProductById: async (productId) => {
-    try {
-      const response = await axiosClient.get(`/products/${productId}`);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data?.message || 'Failed to fetch product';
-    }
-  },
-
-  // Get products by category
-  getProductsByCategory: async (categoryName) => {
-    try {
-      const response = await axiosClient.get(`/products/category/${categoryName}`);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data?.message || 'Failed to fetch products by category';
-    }
-  },
-
-  // ✅ NEW: Search products by query
-  searchProducts: async (query) => {
-    try {
-      if (!query.trim()) {
-        return [];
-      }
-      const response = await axiosClient.get('/products/search', {
-        params: { q: query }
-      });
-      return response.data;
-    } catch (error) {
-      throw error.response?.data?.message || 'Failed to search products';
-    }
-  },
-
-  // Create new product
-  createProduct: async (productData) => {
-    try {
-      console.log('🟡 productService - Sending FormData...');
-      
-      const response = await axiosClient.post('/products', productData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        }
-      });
-
-      console.log('✅ productService - Success:', response.data);
-      return response.data;
-      
-    } catch (error) {
-      console.error('❌ productService error:', error);
-      throw error.response?.data?.message || error.message || 'Failed to create product';
-    }
-  },
-
-  // Update product
-  updateProduct: async (productId, productData) => {
-    try {
-      console.log('🟡 productService - Updating product...');
-      
-      const response = await axiosClient.put(`/products/${productId}`, productData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        }
-      });
-
-      console.log('✅ productService - Update Success:', response.data);
-      return response.data;
-      
-    } catch (error) {
-      console.error('❌ productService update error:', error);
-      throw error.response?.data?.message || error.message || 'Failed to update product';
-    }
-  },
-
-  // Delete product
-  deleteProduct: async (productId) => {
-    try {
-      const response = await axiosClient.delete(`/products/${productId}`);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data?.message || 'Failed to delete product';
-    }
-  },
-
-  // Get products for the currently authenticated user
-  getMyProducts: async () => {
-    try {
-      const response = await axiosClient.get('/users/my-products');
-      return response.data;
-    } catch (error) {
-      throw error.response?.data?.message || 'Failed to fetch your products';
-    }
-  },
-
-  // Get user's products
-  getUserProducts: async (userId) => {
-    try {
-      const response = await axiosClient.get(`/products/user/${userId}`);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data?.message || 'Failed to fetch user products';
-    }
-  }
+  getAllProducts: () => list("/products"),
+  getProductById: async (id) =>
+    normalizeProduct(
+      (await client.get(`/products/${encodeURIComponent(id)}`)).data,
+    ),
+  getProductsByCategory: (category) =>
+    list(`/products/category/${encodeURIComponent(category)}`),
+  searchProducts: (query) =>
+    query.trim()
+      ? list("/products/search", { params: { q: query.trim() } })
+      : Promise.resolve([]),
+  createProduct: async (data) => (await client.post("/products", data)).data,
+  updateProduct: async (id, data) =>
+    (await client.put(`/products/${encodeURIComponent(id)}`, data)).data,
+  deleteProduct: async (id) =>
+    (await client.delete(`/products/${encodeURIComponent(id)}`)).data,
+  getMyProducts: () => list("/users/my-products"),
+  getUserProducts: (id) => list(`/products/user/${encodeURIComponent(id)}`),
 };
-
 export default productService;
