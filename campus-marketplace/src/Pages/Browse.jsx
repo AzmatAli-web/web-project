@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import productService from "../services/productService";
 import ListingCollection from "../Component/ListingCollection";
-import { categories } from "../Component/CategoryGrid";
+import { categories } from "../categories";
 import Icon from "../Component/Icon";
 export default function Browse() {
   const { categoryId } = useParams();
@@ -86,3 +86,4 @@ export default function Browse() {
     </main>
   );
 }
+

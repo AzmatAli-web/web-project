@@ -5,7 +5,7 @@ import CallToAction from "./Component/CallToAction";
 import Icon from "./Component/Icon";
 export default function LandingPage() {
   return (
-    <>
+    <main>
       <HeroSection />
       <div className="value-strip">
         <div className="site-width">
@@ -61,6 +61,7 @@ export default function LandingPage() {
         </div>
       </section>
       <CallToAction />
-    </>
+    </main>
   );
 }
+

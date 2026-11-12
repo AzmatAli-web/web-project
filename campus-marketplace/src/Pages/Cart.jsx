@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../context/useCart";
 import { Link, useLocation } from "react-router-dom";
 import cartService from "../services/cartService";
 
@@ -219,3 +219,4 @@ function Cart() {
 }
 
 export default Cart;
+

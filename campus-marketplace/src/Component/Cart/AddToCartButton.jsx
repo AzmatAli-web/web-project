@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useCart } from "../../context/CartContext";
+import { useCart } from "../../context/useCart";
 import { useNavigate } from "react-router-dom";
 
 function AddToCartButton({ product, size = "md", showQuantity = false }) {
@@ -132,3 +132,4 @@ function AddToCartButton({ product, size = "md", showQuantity = false }) {
 }
 
 export default AddToCartButton;
+

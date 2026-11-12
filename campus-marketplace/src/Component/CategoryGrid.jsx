@@ -1,35 +1,6 @@
 import { Link } from "react-router-dom";
 import Icon from "./Icon";
-export const categories = [
-  {
-    id: "books",
-    name: "Books",
-    description: "Your next chapter",
-    icon: "book",
-    color: "mint",
-  },
-  {
-    id: "gadgets",
-    name: "Gadgets",
-    description: "A smarter upgrade",
-    icon: "laptop",
-    color: "lavender",
-  },
-  {
-    id: "stationery",
-    name: "Stationery",
-    description: "Make your mark",
-    icon: "pen",
-    color: "peach",
-  },
-  {
-    id: "accessories",
-    name: "Accessories",
-    description: "The little essentials",
-    icon: "headphones",
-    color: "yellow",
-  },
-];
+import { categories } from "../categories";
 export default function CategoryGrid() {
   return (
     <section
@@ -38,8 +9,8 @@ export default function CategoryGrid() {
     >
       <div className="section-heading">
         <div>
-          <span className="eyebrow">FIND YOUR KIND OF GOOD</span>
-          <h2>A little of everything.</h2>
+          <span className="eyebrow">BROWSE BY CATEGORY</span>
+          <h2>What’s on your list?</h2>
         </div>
         <Link className="text-link" to="/browse">
           Explore all items <Icon name="arrow" />
@@ -69,3 +40,4 @@ export default function CategoryGrid() {
     </section>
   );
 }
+

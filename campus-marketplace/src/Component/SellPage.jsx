@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import authService from "../services/authService";
 import productService from "../services/productService";
-import { categories } from "./CategoryGrid";
+import { categories } from "../categories";
 import Icon from "./Icon";
 const empty = {
   name: "",
@@ -276,3 +276,4 @@ export default function SellPage() {
     </main>
   );
 }
+

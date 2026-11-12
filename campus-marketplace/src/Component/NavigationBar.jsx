@@ -1,6 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../context/useCart";
 import authService from "../services/authService";
 import Icon from "./Icon";
 
@@ -105,3 +105,4 @@ export default function NavigationBar() {
     </header>
   );
 }
+

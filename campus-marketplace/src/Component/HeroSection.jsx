@@ -1,116 +1,40 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Icon from "./Icon";
+
 export default function HeroSection() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
+  function search(event) {
+    event.preventDefault();
+    navigate(query.trim() ? `/search?q=${encodeURIComponent(query.trim())}` : "/browse");
+  }
   return (
-    <section className="hero site-width">
-      <div className="hero-copy">
-        <span className="eyebrow">
-          <span className="live-dot" /> YOUR CAMPUS. YOUR MARKETPLACE.
-        </span>
-        <h1>
-          Good finds.
-          <br />
-          Better prices.
-          <br />
-          <span>Right on campus.</span>
-        </h1>
-        <p>
-          From your next textbook to your next favourite gadget. Buy, sell, and
-          give great things a second chapter.
-        </p>
-        <form
-          className="search-box"
-          onSubmit={(e) => {
-            e.preventDefault();
-            navigate(
-              query.trim()
-                ? `/search?q=${encodeURIComponent(query.trim())}`
-                : "/browse",
-            );
-          }}
-        >
+    <section className="market-hero site-width" aria-labelledby="hero-title">
+      <div className="hero-editorial">
+        <div className="hero-kicker"><span className="edition-dot" /> THE STUDENT-TO-STUDENT MARKETPLACE</div>
+        <h1 id="hero-title">Big campus<br />energy.<br /><span>Small prices.</span><span className="hero-asterisk" aria-hidden="true">✳</span></h1>
+        <p>The stuff you need. From the people around you.<br className="desktop-break" /> Buy, sell, and make room for what’s next.</p>
+        <form className="search-box hero-search" onSubmit={search} role="search">
           <Icon name="search" size={22} />
-          <input
-            aria-label="Search campus marketplace"
-            placeholder="What are you looking for?"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <button className="button button-dark" type="submit">
-            <span>Find it</span>
-            <Icon name="arrow" size={19} />
-          </button>
+          <input aria-label="Search campus marketplace" placeholder="Textbooks, laptops, your next find…" value={query} onChange={(event) => setQuery(event.target.value)} />
+          <button className="button button-dark" type="submit"><span>Find it</span><Icon name="arrow" size={19} /></button>
         </form>
-        <div className="popular-searches">
-          <span>Popular:</span>
-          {["Books", "Gadgets", "Stationery"].map((x) => (
-            <Link key={x} to={`/category/${x.toLowerCase()}`}>
-              {x}
-              <span>↗</span>
-            </Link>
-          ))}
-        </div>
-        <div className="hero-footnote">
-          <span className="mini-icon">
-            <Icon name="leaf" size={17} />
-          </span>
-          Less spending. Less waste. More possibilities.
-        </div>
+        <div className="hero-quick-links"><span>START WITH</span>{["Books", "Gadgets", "Stationery"].map(name => <Link key={name} to={`/category/${name.toLowerCase()}`}>{name} ↗</Link>)}</div>
+        <div className="hero-bottom-note"><Icon name="pin" size={17} /><span>Close to campus. Closer to a good deal.</span></div>
       </div>
-      <div
-        className="hero-art"
-        aria-label="Discover books, gadgets and campus essentials"
-      >
-        <div className="art-orbit" />
-        <span className="art-spark spark-one">✳</span>
-        <span className="art-caption">
-          PRE-LOVED.
-          <br />
-          RE-DISCOVERED.
-        </span>
-        <Link to="/category/gadgets" className="showcase showcase-gadget">
-          <div className="showcase-image">
-            <img src="/images/laptop.jpeg" alt="Explore laptops and gadgets" />
-          </div>
-          <div className="showcase-info">
-            <div>
-              <small>UPGRADE YOUR EVERYDAY</small>
-              <strong>Gadgets with potential.</strong>
-            </div>
-            <span className="round-arrow">↗</span>
-          </div>
+      <div className="editorial-board">
+        <div className="board-heading"><span>THE CAMPUS EDIT</span><span>GOOD FINDS, ON REPEAT ↗</span></div>
+        <Link to="/category/gadgets" className="edit-feature">
+          <div className="edit-feature-top"><span className="edit-pill">THE EVERYDAY UPGRADE</span><span className="edit-circle"><Icon name="arrow" size={25} /></span></div>
+          <img src="/images/laptop.jpeg" alt="A laptop from the gadgets collection" fetchPriority="high" />
+          <div className="edit-feature-bottom"><h2>New semester.<br />Next-level setup.</h2><span>EXPLORE GADGETS</span></div>
         </Link>
-        <Link to="/category/books" className="showcase showcase-book">
-          <span className="showcase-tag">A new chapter</span>
-          <img src="/images/books.jpeg" alt="Explore second-hand textbooks" />
-          <div className="showcase-info">
-            <strong>Big ideas. Small prices.</strong>
-            <span>↗</span>
-          </div>
-        </Link>
-        <div className="circle-note">
-          <Icon name="leaf" size={25} />
-          <span>
-            Good for you.
-            <br />
-            Better for the planet.
-          </span>
+        <div className="edit-bottom-grid">
+          <Link to="/category/books" className="edit-books"><div><span className="eyebrow">MORE KNOWLEDGE.<br />LESS SPENDING.</span><h3>Turn a<br />new page.</h3><span className="edit-book-link">Shop books ↗</span></div><img src="/images/books.jpeg" alt="A stack of pre-loved books" /></Link>
+          <Link to="/sell" className="edit-sell"><Icon name="plus" size={30} /><h3>Not using it?<br />Pass it on.</h3><span>List your first item <Icon name="arrow" size={18} /></span></Link>
         </div>
-        <Link to="/sell" className="floating-note">
-          <span className="note-icon">
-            <Icon name="plus" />
-          </span>
-          <span>
-            Someone needs
-            <br />
-            <strong>what you don't.</strong>
-          </span>
-          <Icon name="arrow" />
-        </Link>
-        <span className="art-spark spark-two">✳</span>
+        <div className="board-footnote"><Icon name="leaf" size={15} /><span>A second life looks good on everything.</span></div>
       </div>
     </section>
   );

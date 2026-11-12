@@ -2,7 +2,7 @@
 
 A React + Express + MongoDB marketplace for buying and selling books, gadgets, stationery, and accessories in a campus community.
 
-The interface uses a warm off-white and forest-green design, responsive layouts, product collages, category filters, price sorting, page transitions, hover effects, loading skeletons, and reduced-motion support. Catalog, search, details, listing creation/editing, accounts, the cart, and admin screens share the same API client and layout.
+The React JSX interface uses a navy-and-cobalt editorial design with a bold typographic homepage, a curated category board, responsive product cards, category filters, price sorting, loading skeletons, and reduced-motion support. Catalog, search, details, listing creation/editing, accounts, the cart, and admin screens share the same API client and layout.
 
 ## Local setup
 
@@ -64,3 +64,4 @@ npm --prefix campus-marketplace run build
 The API tests run the Express application over HTTP with isolated database stubs and a temporary upload directory. They cover data/image responses, search escaping, category matching, seller routes, multipart editing, image removal, ownership, auth/admin checks, CORS, missing checkout configuration, outages, and durable image-write behavior. Frontend tests cover API URL normalization, separate-backend image URLs, and malformed responses.
 
 Browser checks used temporary catalog fixtures to verify browsing, price sorting, category navigation, product details, seller contact, guest-cart redirects, and search. Fixtures are not included in production source.
+

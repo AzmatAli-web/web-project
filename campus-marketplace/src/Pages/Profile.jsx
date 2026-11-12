@@ -1,5 +1,5 @@
 import authService from "../services/authService";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import userService from "../services/userService"; // For profile updates and user data
 import ProfileForm from "../Component/Profile/ProfileForm";
@@ -13,15 +13,7 @@ function Profile() {
   const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!authService.isAuthenticated()) {
-      navigate("/login");
-      return;
-    }
-    fetchUserProfile();
-  }, []);
-
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     try {
       setLoading(true);
       const userData = await userService.getProfile();
@@ -40,7 +32,15 @@ function Profile() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!authService.isAuthenticated()) {
+      navigate("/login");
+      return;
+    }
+    fetchUserProfile();
+  }, [fetchUserProfile, navigate]);
 
   const handleUpdateProfile = async (updatedData) => {
     try {
@@ -200,3 +200,4 @@ function Profile() {
 }
 
 export default Profile;
+

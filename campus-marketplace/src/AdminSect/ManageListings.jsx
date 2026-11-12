@@ -27,31 +27,6 @@ const ManageListings = () => {
     }
   };
 
-  const handleApprove = async (productId) => {
-    if (!window.confirm("Are you sure you want to approve this product?"))
-      return;
-
-    setActionLoading(productId);
-    try {
-      await productService.updateProduct(productId, { status: "available" });
-      setProducts((prev) =>
-        prev.map((product) =>
-          product._id === productId
-            ? { ...product, status: "available" }
-            : product,
-        ),
-      );
-      alert("Product approved successfully!");
-    } catch (err) {
-      console.error("Error approving product:", err);
-      alert(
-        "Failed to approve product: " + (err.message || "Please try again"),
-      );
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
   const handleDelete = async (productId) => {
     if (
       !window.confirm(
@@ -238,3 +213,4 @@ const ManageListings = () => {
 };
 
 export default ManageListings;
+

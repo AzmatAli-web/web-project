@@ -49,7 +49,7 @@ function ProfileForm({ user, onUpdate, onDeleteAccount, isDeleting }) {
       } else {
         setMessage({ type: 'error', text: result.message });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'An unexpected error occurred' });
     } finally {
       setLoading(false);

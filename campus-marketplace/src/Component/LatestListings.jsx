@@ -10,8 +10,8 @@ export default function LatestListings() {
     <section id="latest" className="site-width section-space">
       <div className="section-heading">
         <div>
-          <span className="eyebrow">FRESH FINDS, FRESH POSSIBILITIES</span>
-          <h2>Just landed on campus.</h2>
+          <span className="eyebrow">THE LATEST DROP</span>
+          <h2>Fresh from your campus.</h2>
         </div>
         <Link className="text-link" to="/browse">
           View all listings <Icon name="arrow" />
@@ -33,3 +33,4 @@ export default function LatestListings() {
     </section>
   );
 }
+
