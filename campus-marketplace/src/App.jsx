@@ -21,6 +21,7 @@ import Profile from "./Pages/Profile";
 import Cart from "./Pages/Cart";
 import About from "./Component/About";
 import Contact from "./Component/Contact";
+import SavedFinds from "./Pages/SavedFinds";
 function Shell() {
   const location = useLocation();
   useEffect(() => {
@@ -57,6 +58,7 @@ const router = createBrowserRouter([
       { path: "/signup", element: <Signup /> },
       { path: "/verify-email", element: <VerifyEmail /> },
       { path: "/browse", element: <Browse /> },
+      { path: "/saved", element: <SavedFinds /> },
       { path: "/category/:categoryId", element: <Browse /> },
       { path: "/search", element: <Browse /> },
       { path: "/products", element: <Browse /> },

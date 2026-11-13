@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import AddToCartButton from "./Cart/AddToCartButton";
 import Icon from "./Icon";
 import { FALLBACK_IMAGE } from "../api/config";
+import SaveFindButton from "./SaveFindButton";
 export default function ProductCard({ product }) {
   const seller =
     typeof product.seller === "object" ? product.seller?.name : null;
@@ -48,6 +49,7 @@ export default function ProductCard({ product }) {
             {product.location}
           </p>
         )}
+        <SaveFindButton product={product} />
         <div className="listing-actions">
           <AddToCartButton product={product} size="sm" />
           <Link

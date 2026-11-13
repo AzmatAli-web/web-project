@@ -4,7 +4,10 @@ import { useCart } from "../context/useCart";
 import authService from "../services/authService";
 import Icon from "./Icon";
 
+import { useCollections } from "../features/useCollections";
+
 export default function NavigationBar() {
+  const { favorites } = useCollections();
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState(() => authService.getCurrentUser());
   const { getCartCount } = useCart();
@@ -55,6 +58,7 @@ export default function NavigationBar() {
             </NavLink>
           </div>
           <div className="nav-actions">
+            <NavLink className="nav-saved" to="/saved" onClick={close} aria-label={`Saved finds, ${favorites.length} items`}>Saved <span>{favorites.length}</span></NavLink>
             <Link
               className="icon-button cart-link"
               to="/cart"

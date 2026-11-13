@@ -5,6 +5,8 @@ import authService from "../services/authService";
 import AddToCartButton from "./Cart/AddToCartButton";
 import Icon from "./Icon";
 import { FALLBACK_IMAGE } from "../api/config";
+import SaveFindButton from "./SaveFindButton";
+import { collections } from "../features/useCollections";
 export default function ProductDetail() {
   const { productId } = useParams();
   const navigate = useNavigate();
@@ -21,7 +23,10 @@ export default function ProductDetail() {
     productService
       .getProductById(productId)
       .then((product) => {
-        if (active) setState({ loading: false, product, error: "" });
+        if (active) {
+          setState({ loading: false, product, error: "" });
+          collections.visit(product);
+        }
       })
       .catch((err) => {
         if (active)
@@ -122,6 +127,7 @@ export default function ProductDetail() {
               {state.error}
             </div>
           )}
+          <SaveFindButton product={product} />
           <AddToCartButton product={product} showQuantity size="lg" />
           <details className="seller-contact">
             <summary>
