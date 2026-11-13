@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { listingUrl, shareListing } from '../src/features/shareListing.js';
+test('listing link encodes ID and strips private URL data',()=>{assert.equal(listingUrl('https://user:pass@example.com/search?token=private#x','book /1'),'https://example.com/product/book%20%2F1');assert.throws(()=>listingUrl('javascript:alert(1)','a'));assert.throws(()=>listingUrl('https://example.com',''));});
+test('native share gets only the listing title and URL',async()=>{let payload;let copied=false;const data={title:'Book',url:'https://example.com/product/1'};assert.equal(await shareListing(data,{share:async x=>{payload=x},clipboard:{writeText:async()=>{copied=true}}}),'shared');assert.deepEqual(payload,data);assert.equal(copied,false);});
+test('share cancellation never copies unexpectedly',async()=>{let copied=false;assert.equal(await shareListing({title:'Book',url:'x'},{share:async()=>{throw Object.assign(new Error(),{name:'AbortError'})},clipboard:{writeText:async()=>{copied=true}}}),'cancelled');assert.equal(copied,false);});
+test('unsupported or failed native sharing falls back to clipboard',async()=>{let copied;assert.equal(await shareListing({title:'Book',url:'clean-url'},{clipboard:{writeText:async x=>{copied=x}}}),'copied');assert.equal(copied,'clean-url');assert.equal(await shareListing({title:'Book',url:'clean-url'},{share:async()=>{throw Error()},clipboard:{writeText:async()=>{}}}),'copied');});
+test('denied or missing clipboard returns manual copy state',async()=>{assert.equal(await shareListing({title:'Book',url:'x'},{}),'manual');assert.equal(await shareListing({title:'Book',url:'x'},{clipboard:{writeText:async()=>{throw Error()}}}),'manual');});

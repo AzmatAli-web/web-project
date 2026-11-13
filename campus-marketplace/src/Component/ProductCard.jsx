@@ -3,6 +3,7 @@ import AddToCartButton from "./Cart/AddToCartButton";
 import Icon from "./Icon";
 import { FALLBACK_IMAGE } from "../api/config";
 import SaveFindButton from "./SaveFindButton";
+import ShareListingButton from "./ShareListingButton";
 export default function ProductCard({ product }) {
   const seller =
     typeof product.seller === "object" ? product.seller?.name : null;
@@ -49,7 +50,10 @@ export default function ProductCard({ product }) {
             {product.location}
           </p>
         )}
-        <SaveFindButton product={product} />
+        <div className="card-utility-actions">
+          <SaveFindButton product={product} />
+          <ShareListingButton key={product._id} product={product} />
+        </div>
         <div className="listing-actions">
           <AddToCartButton product={product} size="sm" />
           <Link

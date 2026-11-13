@@ -6,6 +6,7 @@ import AddToCartButton from "./Cart/AddToCartButton";
 import Icon from "./Icon";
 import { FALLBACK_IMAGE } from "../api/config";
 import SaveFindButton from "./SaveFindButton";
+import ShareListingButton from "./ShareListingButton";
 import { collections } from "../features/useCollections";
 export default function ProductDetail() {
   const { productId } = useParams();
@@ -127,7 +128,10 @@ export default function ProductDetail() {
               {state.error}
             </div>
           )}
-          <SaveFindButton product={product} />
+          <div className="detail-utility-actions">
+            <SaveFindButton product={product} />
+            <ShareListingButton key={product._id} product={product} />
+          </div>
           <AddToCartButton product={product} showQuantity size="lg" />
           <details className="seller-contact">
             <summary>
